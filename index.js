@@ -1,8 +1,11 @@
 const nodegit = require("nodegit");
 const path = require("path");
 
+// let's start out by getting the history of the HEAD branch
+
 const pathToRepo = path.resolve("../ohshitgit");
-let walker = null;
+var walker;
+
 // first we open the repo in order to interact with it
 nodegit.Repository.open(pathToRepo)
     .then(function(repo) {
@@ -16,7 +19,7 @@ nodegit.Repository.open(pathToRepo)
         console.log("head: " + commit.sha());
         walker.sorting(nodegit.Revwalk.SORT.TIME);
         walker.push(commit.id());
-        return walker.getCommits(10)
+        return walker.getCommits(10);
     }).then(function (commits) {
         // note the head commit is repeated in the list, we can skip it
         // but for now just keep it
