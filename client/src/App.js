@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import Enviro from './Enviro';
+import SubEnviro from './SubEnviro';
+import Branch from './Branch';
+import Files from './Files';
+import './App.scss';
 
 class App extends Component {
     state = {
@@ -23,18 +26,27 @@ class App extends Component {
     };
 
     render() {
-    return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-            {this.state.response}
-        </header>
-      </div>
-    );
-  }
+        return (
+          <div className="wrapper">
+              <Enviro title="Github" type="hub">
+                  <SubEnviro title="Remote" type="remote">
+                      <Branch />
+                  </SubEnviro>
+              </Enviro>
+              <Enviro title="Your Machine" type="machine">
+                  <SubEnviro title="Local" type="local">
+                      <Branch />
+                  </SubEnviro>
+                  <SubEnviro title="Index" type="index">
+                      <Files />
+                  </SubEnviro>
+                  <SubEnviro title="Workspace" type="work">
+                      <Files />
+                  </SubEnviro>
+              </Enviro>
+          </div>
+        );
+    }
 }
 
 export default App;

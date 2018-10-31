@@ -1,0 +1,88 @@
+*{
+  box-sizing: border-box;
+}
+
+.wrapper {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+}
+
+.enviro {
+  display: flex;
+  flex-direction: column;
+
+  padding: 0 1em 1em 1em;
+
+  > h2 {
+    text-align: center;
+  }
+
+  &.hub {
+    flex-basis: 25%;
+    border-right: 10px double black;
+
+    .sub-enviro {
+      flex-basis: 100%;
+    }
+  }
+
+  &.machine {
+    flex-basis: 75%;
+
+    .sub-enviro {
+      flex-basis: 33.333%;
+      border-right: 2px dashed black;
+
+      &:last-child {
+        border-right: none;
+      }
+    }
+  }
+}
+
+.subs {
+  display: flex;
+  flex-basis: 100%;
+}
+
+.sub-enviro {
+  padding-left: .5em;
+  padding-right: .5em;
+  display: flex;
+  flex-direction: column;
+
+  > h3 {
+    text-align:center;
+  }
+}
+
+.branch {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  flex-basis: 100%;
+}
+
+.commit {
+  position: relative;
+  padding: 1em 0;
+
+  &:before {
+    content: "";
+    position: absolute;
+    height: 3em;
+    width: 1px;
+    background-color: black;
+    left: -15px;
+    top: 50%;
+  }
+}
+
+.files {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  flex-basis: 100%;
+  list-style-type: square;
+}
