@@ -1,5 +1,5 @@
 const nodegit = require("nodegit");
-const path = require("path");
+const utils = require("./utils");
 
 /**
  * Gets the specified number of commits in history starting
@@ -14,17 +14,6 @@ async function getHistory(repo, commit, numCommits) {
     walker.sorting(nodegit.Revwalk.SORT.TIME);
     walker.push(commit.id());
     return walker.getCommits(numCommits);
-}
-
-/**
- * Open a repository at the specified path
- * @param repoPath
- * @returns {Promise<Repository>}
- */
-async function openRepo(repoPath) {
-    repoPath = repoPath || "../ohshitgit";
-    const resolvedPath = path.resolve(repoPath);
-    return nodegit.Repository.open(resolvedPath);
 }
 
 /**
@@ -85,14 +74,12 @@ async function getHeadHistory(repo, numCommits) {
 /**
  * Get the local and remote history of a repo's currently checked out branch
  * @param repoPath
- * @returns {Promise<void>}
+ * @returns Obj
  */
 async function getCurrentBranchHistory(repoPath) {
-    openRepo(repoPath).then(function(repo) {
-        return getHeadHistory(repo, 10);
-    }).then(function(hist) {
-        console.log(hist);
-    });
+    const repo = await utils.openRepo(repoPath);
+    const hist = await getHeadHistory(repo, 10);
+    return await hist;
 }
 
-getCurrentBranchHistory("../ohshitgit");
+module.exports.get = getCurrentBranchHistory;
