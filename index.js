@@ -33,7 +33,7 @@ function getHeadHistory(repoPath) {
     });
 }
 
-getHeadHistory();
+//getHeadHistory();
 
 // get the status of the working directory
 function getStatus(repoPath) {
@@ -61,18 +61,19 @@ function getStatus(repoPath) {
     });
 }
 
-getStatus();
+//getStatus();
 
 function getRemote(repoPath) {
     repoPath = repoPath || "../ohshitgit";
     const pathToRepo = path.resolve(repoPath);
+    var currRepo;
 
     nodegit.Repository.open(pathToRepo).then(function (repo) {
+        currRepo = repo;
         return repo.getCurrentBranch();
     }).then(function (branch) {
-        var target = branch.target();
-
-
+        //console.log(branch.shorthand());
+        console.log(branch.remoteName());
     });
 }
 
