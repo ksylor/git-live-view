@@ -6,10 +6,12 @@ const utils = require("./utils");
  * @param file
  * @returns {{path: *}}
  */
-function getDeets(file) {
+function getDeets(file, indexOrWorkspace) {
     return {
         "path": file.path(),
-        "status": file.status(),
+        "status": file.status().filter(
+            status => status.split("_")[0] === indexOrWorkspace
+        ),
     }
 }
 
@@ -28,8 +30,12 @@ async function getStatus(repoPath) {
     const working = statuses.filter(file => file.inWorkingTree());
 
     return {
-        "index": index.map(getDeets),
-        "workspace": working.map(getDeets),
+        "index": index.map(function(file) {
+            return getDeets(file, "INDEX");
+        }),
+        "workspace": working.map(function(file) {
+            return getDeets(file, "WT");
+        }),
     };
 }
 

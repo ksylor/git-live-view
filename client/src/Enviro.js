@@ -5,7 +5,7 @@ class Enviro extends Component {
         let classy = "enviro " + this.props.type;
         return (
             <div className={classy}>
-                <h2>{this.props.title}</h2>
+                <h2 className="enviro-title">{this.props.title}</h2>
                 <div className="subs">
                     {this.props.children}
                 </div>

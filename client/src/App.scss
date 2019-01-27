@@ -12,7 +12,7 @@
   display: flex;
   flex-direction: column;
 
-  padding: 0 1em 1em 1em;
+  padding: 0 1em;
 
   > h2 {
     text-align: center;
@@ -60,6 +60,18 @@
 .branch {
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+  flex-basis: 100%;
+}
+
+.branch-name {
+  text-align: center;
+  font-family: monospace;
+}
+
+.branch-commits {
+  display: flex;
+  flex-direction: column;
   justify-content: flex-end;
   flex-basis: 100%;
 }
@@ -79,10 +91,28 @@
   }
 }
 
+.commit-truncate {
+  display: inline-block;
+  text-overflow: ellipsis;
+  max-width: 8em;
+  overflow: hidden;
+}
+
 .files {
   display: flex;
   flex-direction: column;
   justify-content: space-around;
   flex-basis: 100%;
   list-style-type: square;
+}
+
+.file-status {
+  line-height: 1;
+  display: inline-block;
+  font-size: small;
+  padding: 3px 6px;
+  background: black;
+  color: white;
+  float: right;
+  border-radius: 4px;
 }

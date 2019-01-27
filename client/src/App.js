@@ -7,41 +7,51 @@ import './App.scss';
 
 class App extends Component {
     state = {
-        status: ''
+        data: undefined
     };
 
     componentDidMount() {
         this.callApi()
-            .then(res => this.setState({ status: res.express }))
+            .then(res => {
+                this.setState({ 'data': res });
+            })
             .catch(err => console.log(err));
+
+
     }
 
     callApi = async () => {
         const response = await fetch('/api/status');
         const body = await response.json();
 
-        if (response.status !== 200) throw Error(body.message);
+        //if (response.status !== 200) throw Error(body.message);
 
         return body;
     };
 
     render() {
+        if (!this.state.data) {
+            return (
+                <div>Loading...</div>
+            )
+        }
+
         return (
           <div className="wrapper">
               <Enviro title="Github" type="hub">
                   <SubEnviro title="Remote" type="remote">
-                      <Branch />
+                      <Branch {...this.state.data.branches.remote} />
                   </SubEnviro>
               </Enviro>
               <Enviro title="Your Machine" type="machine">
                   <SubEnviro title="Local" type="local">
-                      <Branch />
+                      <Branch {...this.state.data.branches.local} />
                   </SubEnviro>
                   <SubEnviro title="Index" type="index">
-                      <Files />
+                      <Files list={this.state.data.files.index} />
                   </SubEnviro>
                   <SubEnviro title="Workspace" type="work">
-                      <Files />
+                      <Files list={this.state.data.files.workspace} />
                   </SubEnviro>
               </Enviro>
           </div>

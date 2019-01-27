@@ -1,6 +1,8 @@
 const nodegit = require("nodegit");
 const utils = require("./utils");
 
+const goBackCommits = 8;
+
 /**
  * Gets the specified number of commits in history starting
  * from the commit passed in
@@ -64,10 +66,18 @@ async function getHeadHistory(repo, numCommits) {
     }
 
     return {
-        'currentBranch': currentBranch.name(),
-        'localHistory': localHistory.map(function(commit) { return commit.sha() }),
-        'remoteBranch': remoteBranch ? remoteBranch.name() : "No upstream branch",
-        'remoteHistory': remoteHistory ? remoteHistory.map(function(commit) { return commit.sha() }) : null,
+        'local': {
+            'branchName': currentBranch.name(),
+            'history': localHistory.map(function (commit) {
+                return commit.sha()
+            }),
+        },
+        'remote' : {
+            'branchName': remoteBranch ? remoteBranch.name() : "No upstream branch",
+            'history': remoteHistory ? remoteHistory.map(function (commit) {
+                return commit.sha()
+            }) : null,
+        }
     };
 }
 
@@ -78,7 +88,7 @@ async function getHeadHistory(repo, numCommits) {
  */
 async function getCurrentBranchHistory(repoPath) {
     const repo = await utils.openRepo(repoPath);
-    const hist = await getHeadHistory(repo, 10);
+    const hist = await getHeadHistory(repo, 8);
     return await hist;
 }
 

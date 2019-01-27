@@ -3,12 +3,17 @@ import Commit from './Commit';
 
 class Branch extends Component {
     render() {
+        const commits = this.props.history.map((hash) =>
+            <Commit hash={hash} key={hash}/>
+        );
+
         return (
-            <ul className="branch">
-                <Commit hash="12345" />
-                <Commit hash="23456" />
-                <Commit hash="34567" />
-            </ul>
+            <div className="branch">
+                <h4 className="branch-name">{this.props.branchName}</h4>
+                <ul className="branch-commits">
+                    {commits}
+                </ul>
+            </div>
         )
     }
 }

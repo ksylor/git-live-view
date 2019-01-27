@@ -3,8 +3,10 @@ import React, { Component } from 'react';
 class Commit extends Component {
     render() {
         return (
-            <li className="commit">{this.props.hash}</li>
-        )
+            <li className="commit">
+                <span className="commit-truncate">{this.props.hash}</span>
+            </li>
+        );
     }
 }
 
