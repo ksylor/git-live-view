@@ -91,6 +91,10 @@
   }
 }
 
+.commit-is-ahead {
+  color: red;
+}
+
 .commit-truncate {
   display: inline-block;
   text-overflow: ellipsis;

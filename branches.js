@@ -1,7 +1,7 @@
 const nodegit = require("nodegit");
 const utils = require("./utils");
 
-const goBackCommits = 8;
+const goBackCommits = 5;
 
 /**
  * Gets the specified number of commits in history starting
@@ -16,6 +16,20 @@ async function getHistory(repo, commit, numCommits) {
     walker.sorting(nodegit.Revwalk.SORT.TIME);
     walker.push(commit.id());
     return walker.getCommits(numCommits);
+}
+
+async function getHistoryUntil(repo, startCommit, endCommitId) {
+    if (startCommit.id().toString() === endCommitId.toString()) {
+        console.log("start and end are the same");
+        return [];
+    }
+
+    var walker = nodegit.Revwalk.create(repo);
+    walker.sorting(nodegit.Revwalk.SORT.TIME);
+    walker.push(startCommit.id());
+    return walker.getCommitsUntil(function(checkCommit) {
+        return checkCommit.id().toString() !== endCommitId.toString();
+    });
 }
 
 /**
@@ -44,10 +58,7 @@ async function getRemote(branch) {
  */
 async function getHeadHistory(repo, numCommits) {
     // get the local checked-out branch's head commit
-    const head = await repo.getHeadCommit();
-
-    // get the history back from that commit
-    const localHistory = await getHistory(repo, head, numCommits);
+    const localHead = await repo.getHeadCommit();
 
     // get the local branch reference
     const currentBranch = await repo.getCurrentBranch();
@@ -55,27 +66,70 @@ async function getHeadHistory(repo, numCommits) {
     // get the corresponding upstream reference
     const remoteBranch = await getRemote(currentBranch);
 
+    let localHistory;
     let remoteHistory;
+    let localAheadBy = 0;
+    let remoteAheadBy = 0;
 
+    // default to showing the default number of commits
+    let goBackLocal = numCommits;
+    let goBackRemote = numCommits;
+
+    // if there is a remote branch, get info about that
     if (remoteBranch) {
         // get the tip commit of the remote branch
         const remoteHead = await repo.getReferenceCommit(remoteBranch);
 
-        // get the history back from that commit
-        remoteHistory = await getHistory(repo, remoteHead, numCommits);
+        if (localHead.id().toString() !== remoteHead.id().toString()) {
+            // find the commit where local branches from remote
+            const mergeBase = await nodegit.Merge.base(repo, localHead, remoteHead);
+
+            // calculate how many commits to display so that the merge base commit
+            // is on the same line in both local and remote
+
+            // how many commits back do we go back to find the merge base?
+            const partialRemoteHistory = await getHistoryUntil(repo, remoteHead, mergeBase);
+            const partialLocalHistory = await getHistoryUntil(repo, localHead, mergeBase);
+
+
+            // damn zero indexed arrays
+            localAheadBy = Math.max(0, partialLocalHistory.length - 1);
+            remoteAheadBy = Math.max(0, partialRemoteHistory.length - 1);
+
+            // this calculation took me a while, basically figure out the
+            // difference in commits and subtract that from the number of commits,
+            // but don't go higher than the number of commits
+            goBackLocal = Math.min((numCommits - (remoteAheadBy - localAheadBy)), numCommits);
+            goBackRemote = Math.min((numCommits - (localAheadBy - remoteAheadBy)), numCommits);
+        }
+
+        // get the history for remote
+        remoteHistory = await getHistory(repo, remoteHead, goBackRemote);
+
+        // get the history for local
+        localHistory = await getHistory(repo, localHead, goBackLocal);
+    } else {
+        // there's no remote so just get the local history back by the number of commits
+        localHistory = await getHistory(repo, localHead, numCommits);
     }
 
     return {
         'local': {
             'branchName': currentBranch.name(),
-            'history': localHistory.map(function (commit) {
-                return commit.sha()
+            'history': localHistory.map(function (commit, idx) {
+                return {
+                    sha: commit.sha(),
+                    isAhead: localAheadBy > 0 && idx < localAheadBy,
+                }
             }),
         },
         'remote' : {
             'branchName': remoteBranch ? remoteBranch.name() : "No upstream branch",
-            'history': remoteHistory ? remoteHistory.map(function (commit) {
-                return commit.sha()
+            'history': remoteHistory ? remoteHistory.map(function (commit, idx) {
+                return {
+                    sha: commit.sha(),
+                    isAhead: remoteAheadBy > 0 && idx < remoteAheadBy,
+                }
             }) : null,
         }
     };
@@ -88,7 +142,7 @@ async function getHeadHistory(repo, numCommits) {
  */
 async function getCurrentBranchHistory(repoPath) {
     const repo = await utils.openRepo(repoPath);
-    const hist = await getHeadHistory(repo, 8);
+    const hist = await getHeadHistory(repo, goBackCommits);
     return await hist;
 }
 

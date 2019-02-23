@@ -3,8 +3,8 @@ import Commit from './Commit';
 
 class Branch extends Component {
     render() {
-        const commits = this.props.history.map((hash) =>
-            <Commit hash={hash} key={hash}/>
+        const commits = this.props.history.map(({ sha, isAhead}) =>
+            <Commit hash={sha} key={sha} isAhead={isAhead}/>
         );
 
         return (
