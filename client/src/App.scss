@@ -53,7 +53,8 @@
   flex-direction: column;
 
   > h3 {
-    text-align:center;
+    text-align: center;
+    margin-bottom: 0;
   }
 }
 
@@ -74,6 +75,8 @@
   flex-direction: column;
   justify-content: flex-end;
   flex-basis: 100%;
+  margin: 0;
+  padding-left: 15px;
 }
 
 .commit {

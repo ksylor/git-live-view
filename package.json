@@ -11,9 +11,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "chokidar": "^2.1.2",
     "express": "^4.16.3",
     "node-sass": "^4.9.4",
-    "nodegit": "^0.22.2"
+    "nodegit": "^0.24.1"
   },
   "devDependencies": {
     "concurrently": "^4.0.1"

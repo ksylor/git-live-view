@@ -20,7 +20,6 @@ async function getHistory(repo, commit, numCommits) {
 
 async function getHistoryUntil(repo, startCommit, endCommitId) {
     if (startCommit.id().toString() === endCommitId.toString()) {
-        console.log("start and end are the same");
         return [];
     }
 
@@ -115,7 +114,7 @@ async function getHeadHistory(repo, numCommits) {
 
     return {
         'local': {
-            'branchName': currentBranch.name(),
+            'branchName': currentBranch.name().replace("refs/heads/", ""),
             'history': localHistory.map(function (commit, idx) {
                 return {
                     sha: commit.sha(),
@@ -124,7 +123,7 @@ async function getHeadHistory(repo, numCommits) {
             }),
         },
         'remote' : {
-            'branchName': remoteBranch ? remoteBranch.name() : "No upstream branch",
+            'branchName': remoteBranch ? remoteBranch.name().replace("refs/remotes/", "") : "No upstream branch",
             'history': remoteHistory ? remoteHistory.map(function (commit, idx) {
                 return {
                     sha: commit.sha(),
