@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import io from 'socket.io-client';
 import Enviro from './Enviro';
 import SubEnviro from './SubEnviro';
 import Branch from './Branch';
@@ -6,28 +7,43 @@ import Files from './Files';
 import './App.scss';
 
 class App extends Component {
-    state = {
-        data: undefined
-    };
+    constructor (props) {
+        super(props);
 
-    componentDidMount() {
-        this.callApi()
-            .then(res => {
-                this.setState({ 'data': res });
-            })
-            .catch(err => console.log(err));
+        this.state = {
+            data: undefined
+        };
 
+        this.socket = io('localhost:5000');
 
+        this.socket.on('UPDATE', function (data) {
+            update(data);
+        });
+
+        const update = data => {
+            console.log(data);
+            this.setState({data: data});
+        }
     }
 
-    callApi = async () => {
-        const response = await fetch('/api/status');
-        const body = await response.json();
-
-        //if (response.status !== 200) throw Error(body.message);
-
-        return body;
-    };
+    // componentDidMount() {
+    //     this.callApi()
+    //         .then(res => {
+    //             this.setState({ 'data': res });
+    //         })
+    //         .catch(err => console.log(err));
+    //
+    //
+    // }
+    //
+    // callApi = async () => {
+    //     const response = await fetch('/api/status');
+    //     const body = await response.json();
+    //
+    //     //if (response.status !== 200) throw Error(body.message);
+    //
+    //     return body;
+    // };
 
     render() {
         if (!this.state.data) {
