@@ -2,10 +2,10 @@
   "name": "git-live-view",
   "version": "1.0.0",
   "description": "magic",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "client": "cd client && npm start",
-    "server": "nodemon server.js",
+    "server": "nodemon src/server.js",
     "dev": "concurrently --kill-others-on-fail \"npm run server\" \"npm run client\""
   },
   "author": "",

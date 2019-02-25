@@ -1,6 +1,12 @@
 const express = require('express');
 const branches = require("./branches");
 const files = require("./files");
+const chokidar = require('chokidar');
+
+// One-liner for current directory, ignores .dotfiles
+chokidar.watch("../ohshitgit").on('all', (event, path) => {
+    console.log(event, path);
+});
 
 const app = express();
 const port = process.env.PORT || 5000;
