@@ -63,7 +63,7 @@ class App extends Component {
                   <SubEnviro title="Local" type="local">
                       <Branch {...this.state.data.branches.local} />
                   </SubEnviro>
-                  <SubEnviro title="Index" type="index">
+                  <SubEnviro title="Index/Staging" type="index">
                       <Files list={this.state.data.files.index} />
                   </SubEnviro>
                   <SubEnviro title="Workspace" type="work">
