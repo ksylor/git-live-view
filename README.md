@@ -55,3 +55,6 @@ npm run watch -- repo=../example
 The process should automatically open up a browser window that displays the viewer UI. If you open a new terminal window and access the repo that you passed in as a parameter, then start editing/adding/committing/pushing etc. you should see the UI update _in real time_ to reflect your changes.
 
 When you are all done, `ctrl+c` in the original terminal window to shut the whole thing down.
+
+#### P.S.
+This doesn't even remotely work on a mobile device, if that isn't already obvious.

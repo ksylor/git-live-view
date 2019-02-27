@@ -1,21 +1,22 @@
 {
   "name": "git-live-view",
   "version": "0.1.0",
-  "description": "magic",
-  "main": "src/index.js",
+  "description": "Live-updating visualizer of the state of a git repo",
+  "main": "src/server.js",
   "scripts": {
     "client": "cd client && npm start",
     "server": "nodemon src/server.js",
     "watch": "node run.js",
-    "dev": "concurrently --kill-others-on-fail \"npm run server\" \"npm run client\""
+    "postinstall": "cd client && npm install"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Katie Sylor-Miller @ksylor @ohshitgit",
+  "license": "CC BY-NC-SA 2.0",
   "dependencies": {
     "chokidar": "^2.1.2",
     "express": "^4.16.4",
     "node-sass": "^4.11.0",
     "nodegit": "^0.24.1",
+    "nodemon": "^1.18.10",
     "socket.io": "^2.2.0"
   },
   "devDependencies": {
