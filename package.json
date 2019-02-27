@@ -1,23 +1,24 @@
 {
   "name": "git-live-view",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "magic",
   "main": "src/index.js",
   "scripts": {
     "client": "cd client && npm start",
     "server": "nodemon src/server.js",
+    "watch": "node run.js",
     "dev": "concurrently --kill-others-on-fail \"npm run server\" \"npm run client\""
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "chokidar": "^2.1.2",
-    "express": "^4.16.3",
-    "node-sass": "^4.9.4",
+    "express": "^4.16.4",
+    "node-sass": "^4.11.0",
     "nodegit": "^0.24.1",
     "socket.io": "^2.2.0"
   },
   "devDependencies": {
-    "concurrently": "^4.0.1"
+    "concurrently": "^4.1.0"
   }
 }
