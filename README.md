@@ -1,4 +1,4 @@
-Hello! 
+## Hello and welcome!
 
 This project is _very much_ a work in progress. You can follow along here:
 https://ksylor.github.io/2018/10/06/getting-restarted.html, although I'm not guaranteed to keep up with that, sorry
@@ -49,3 +49,9 @@ npm run watch -- repo=~/git-live-view
 // watch a sibling directory
 npm run watch -- repo=../example
 ```
+
+## What happens next?
+
+The process should automatically open up a browser window that displays the viewer UI. If you open a new terminal window and access the repo that you passed in as a parameter, then start editing/adding/committing/pushing etc. you should see the UI update _in real time_ to reflect your changes.
+
+When you are all done, `ctrl+c` in the original terminal window to shut the whole thing down.
