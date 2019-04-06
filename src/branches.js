@@ -49,6 +49,35 @@ async function getRemote(branch) {
 }
 
 /**
+ * It's possible to push up a branch to remote without
+ * setting it as a tracking branch, check for that state
+ * @param branch
+ * @returns string representing the type of missing remote
+ */
+async function checkForUntrackedRemote(repo, localBranch) {
+    // branch name will be in the format refs/heads/branch_name
+    // TODO figure out about remotes other than origin
+    // let remoteName = localBranch.name().substr(11);
+    let remoteName = localBranch.name().replace('heads', 'remotes/origin');
+
+    return await nodegit.Reference.nameToId(repo, remoteName)
+        .then(function(remote) {
+            return "MSG_UNTRACKED_REMOTE";
+        }).catch(function(err) {
+            return "MSG_NO_REMOTE";
+        });
+
+    // return await nodegit.Branch.lookup(repo, 'master', nodegit.Branch.BRANCH.REMOTE)
+    //     .then(function(remote) {
+    //         // there is a remote with the same name
+    //         return "MSG_UNTRACKED_REMOTE";
+    //     }).catch(function(err) {
+    //         console.log(err);
+    //         return "MSG_NO_REMOTE";
+    //     });
+}
+
+/**
  * gets the history of the remote upstream for the currently
  * checked out branch going back specified number of commits
  * @param repo
@@ -61,12 +90,12 @@ async function getHeadHistory(repo, numCommits) {
 
     // get the local branch reference
     const currentBranch = await repo.getCurrentBranch();
-
     // get the corresponding upstream reference
     const remoteBranch = await getRemote(currentBranch);
 
     let localHistory;
     let remoteHistory;
+    let noRemoteMsg;
     let localAheadBy = 0;
     let remoteAheadBy = 0;
 
@@ -110,6 +139,11 @@ async function getHeadHistory(repo, numCommits) {
     } else {
         // there's no remote so just get the local history back by the number of commits
         localHistory = await getHistory(repo, localHead, numCommits);
+
+        // check if there is a remote branch with the same name that is just untracked.
+        noRemoteMsg = await checkForUntrackedRemote(repo, currentBranch);
+
+        console.log(noRemoteMsg);
     }
 
     return {
@@ -123,7 +157,8 @@ async function getHeadHistory(repo, numCommits) {
             }),
         },
         'remote' : {
-            'branchName': remoteBranch ? remoteBranch.name().replace("refs/remotes/", "") : "No upstream branch",
+            'msg': noRemoteMsg,
+            'branchName': remoteBranch ? remoteBranch.name().replace("refs/remotes/", "") : null,
             'history': remoteHistory ? remoteHistory.map(function (commit, idx) {
                 return {
                     sha: commit.sha(),

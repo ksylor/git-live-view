@@ -26,24 +26,25 @@ class App extends Component {
         }
     }
 
-    // componentDidMount() {
-    //     this.callApi()
-    //         .then(res => {
-    //             this.setState({ 'data': res });
-    //         })
-    //         .catch(err => console.log(err));
-    //
-    //
-    // }
-    //
-    // callApi = async () => {
-    //     const response = await fetch('/api/status');
-    //     const body = await response.json();
-    //
-    //     //if (response.status !== 200) throw Error(body.message);
-    //
-    //     return body;
-    // };
+    getNoRemoteMessage(type, branchName) {
+        if (type === "MSG_UNTRACKED_REMOTE") {
+            return (
+                <div className="no-remote">
+                    <p>Local and remote branches with the same name are not associated with each other. Run the following command to set up the remote tracking branch:</p>
+                    <code>{`git branch --set-upstream-to=origin/${branchName} ${branchName}`}</code>
+                </div>
+            );
+        }
+
+        if (type === "MSG_NO_REMOTE") {
+            return (
+                <div className="no-remote">
+                    <p>This branch doesn't have a remote tracking branch associated with it. Run the following command to push up the branch and set up the remote tracking branch:</p>
+                    <code>{`git push -u origin ${branchName}`}</code>
+                </div>
+            );
+        }
+    }
 
     render() {
         if (!this.state.data) {
@@ -56,7 +57,9 @@ class App extends Component {
           <div className="wrapper">
               <Enviro title="Github" type="hub">
                   <SubEnviro title="Remote" type="remote">
-                      <Branch {...this.state.data.branches.remote} />
+                      { this.state.data.branches.remote.msg
+                          ? <p className="no-upstream">{this.getNoRemoteMessage(this.state.data.branches.remote.msg, this.state.data.branches.local.branchName)}</p>
+                          : <Branch {...this.state.data.branches.remote} /> }
                   </SubEnviro>
               </Enviro>
               <Enviro title="Your Machine" type="machine">
