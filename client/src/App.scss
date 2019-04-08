@@ -5,7 +5,8 @@
 .wrapper {
   display: flex;
   width: 100vw;
-  height: 100vh;
+  min-height: 100vh;
+  align-items: stretch;
 }
 
 .enviro {
@@ -80,6 +81,19 @@
   padding-left: 15px;
 }
 
+.multi-branch {
+  display: flex;
+}
+
+.multi-branch .branch {
+  flex-basis: 50%;
+}
+
+.multi-branch + .branch {
+  width: 50%;
+  margin: 0 auto;
+}
+
 .commit {
   position: relative;
   padding: 1em 0;
@@ -102,7 +116,7 @@
 .commit-truncate {
   display: inline-block;
   text-overflow: ellipsis;
-  max-width: 8em;
+  max-width: 5em;
   overflow: hidden;
 }
 

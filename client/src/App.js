@@ -5,6 +5,7 @@ import SubEnviro from './SubEnviro';
 import Branch from './Branch';
 import Files from './Files';
 import './App.scss';
+import MultiBranch from './MultiBranch';
 
 class App extends Component {
     constructor (props) {
@@ -57,20 +58,23 @@ class App extends Component {
           <div className="wrapper">
               <Enviro title="Github" type="hub">
                   <SubEnviro title="Remote" type="remote">
-                      { this.state.data.branches.remote.msg
-                          ? <p className="no-upstream">{this.getNoRemoteMessage(this.state.data.branches.remote.msg, this.state.data.branches.local.branchName)}</p>
-                          : <Branch {...this.state.data.branches.remote} /> }
+                      { this.state.data.remote.msg
+                          ? <p className="no-upstream">{this.getNoRemoteMessage(this.state.data.remote.msg, this.state.data.local.branchName)}</p>
+                          : <Branch {...this.state.data.remote} /> }
                   </SubEnviro>
               </Enviro>
               <Enviro title="Your Machine" type="machine">
                   <SubEnviro title="Local" type="local">
-                      <Branch {...this.state.data.branches.local} />
+                      { this.state.data.isMultiBranch
+                        ? <MultiBranch {...this.state.data.local} />
+                        : <Branch {...this.state.data.local} />
+                      }
                   </SubEnviro>
                   <SubEnviro title="Index/Staging" type="index">
-                      <Files list={this.state.data.files.index} />
+                      <Files list={this.state.data.index} />
                   </SubEnviro>
-                  <SubEnviro title="Workspace" type="work">
-                      <Files list={this.state.data.files.workspace} />
+                  <SubEnviro title="Workspace" type="workspace">
+                      <Files list={this.state.data.workspace} />
                   </SubEnviro>
               </Enviro>
           </div>

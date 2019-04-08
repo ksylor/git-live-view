@@ -49,8 +49,8 @@ async function getStatus() {
     const fileStatus = await files.get(repoPath);
 
     return {
-        "branches": branchStatus,
-        "files": fileStatus,
+        ...branchStatus,
+        ...fileStatus
     };
 }
 
