@@ -113,7 +113,15 @@ async function getSingleBranchHistory(repo, localHead, localBranch, numCommits) 
     };
 }
 
-async function getMultiBranchHistory(repo, branchOneHead, branchOneBranch, branchOneAheadBy, branchTwoHead, branchTwoBranch, branchTwoAheadBy) {
+async function getMultiBranchHistory(
+    repo,
+    branchOneHead,
+    branchOneBranch,
+    branchOneAheadBy,
+    branchTwoHead,
+    branchTwoBranch,
+    branchTwoAheadBy
+) {
     if (branchOneHead.id().equal(branchTwoHead.id())) {
         // both branches point to the same commit
         // todo fix this to do something
