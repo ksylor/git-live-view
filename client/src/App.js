@@ -60,12 +60,14 @@ class App extends Component {
                   <SubEnviro title="Remote" type="remote">
                       { this.state.data.remote.msg
                           ? <p className="no-upstream">{this.getNoRemoteMessage(this.state.data.remote.msg, this.state.data.local.branchName)}</p>
+                          : this.state.data.remote.isMultiBranch
+                          ? <MultiBranch {...this.state.data.remote} />
                           : <Branch {...this.state.data.remote} /> }
                   </SubEnviro>
               </Enviro>
               <Enviro title="Your Machine" type="machine">
                   <SubEnviro title="Local" type="local">
-                      { this.state.data.isMultiBranch
+                      { this.state.data.local.isMultiBranch
                         ? <MultiBranch {...this.state.data.local} />
                         : <Branch {...this.state.data.local} />
                       }

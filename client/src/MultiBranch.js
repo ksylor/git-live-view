@@ -8,7 +8,7 @@ class MultiBranch extends Component {
         );
 
         return (
-            <div>
+            <div className="multi-branch-wrap">
                 <div className="multi-branch">
                     {branches}
                 </div>

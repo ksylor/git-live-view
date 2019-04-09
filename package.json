@@ -12,11 +12,12 @@
   "author": "Katie Sylor-Miller @ksylor @ohshitgit",
   "license": "CC BY-NC-SA 2.0",
   "dependencies": {
-    "chokidar": "^2.1.2",
+    "chokidar": "^2.1.5",
     "express": "^4.16.4",
+    "express-session": "^1.15.6",
     "node-sass": "^4.11.0",
     "nodegit": "^0.24.1",
-    "nodemon": "^1.18.10",
+    "nodemon": "^1.18.11",
     "socket.io": "^2.2.0"
   },
   "devDependencies": {

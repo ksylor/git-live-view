@@ -66,8 +66,7 @@ async function getRemote(branch) {
  */
 async function checkForUntrackedRemote(repo, localBranchWitNoRemote) {
     // branch name will be in the format refs/heads/branch_name
-    // TODO figure out about remotes other than origin
-    // let remoteName = localBranch.name().substr(11);
+    // TODO how to handle remotes other than origin?
     let remoteName = localBranchWitNoRemote.name().replace('heads', 'remotes/origin');
 
     return await nodegit.Reference.nameToId(repo, remoteName)
@@ -76,6 +75,12 @@ async function checkForUntrackedRemote(repo, localBranchWitNoRemote) {
         }).catch(function(err) {
             return "MSG_NO_REMOTE";
         });
+}
+
+function getShortBranchName(longname) {
+    return longname
+        .replace("refs/remotes/origin/", "")
+        .replace("refs/heads/", "");
 }
 
 /**
@@ -146,7 +151,7 @@ async function getSingleBranchHistory(repo, localHead, localBranch, numCommits) 
     return {
         'isMultiBranch' : false,
         'local': {
-            'branchName': localBranch.name().replace("refs/heads/", ""),
+            'branchName': getShortBranchName(localBranch.name()),
             'history': localHistory.map(function (commit, idx) {
                 return {
                     sha: commit.sha(),
@@ -156,7 +161,7 @@ async function getSingleBranchHistory(repo, localHead, localBranch, numCommits) 
         },
         'remote' : {
             'msg': noRemoteMsg,
-            'branchName': remoteBranch ? remoteBranch.name().replace("refs/remotes/", "") : null,
+            'branchName': remoteBranch ? getShortBranchName(remoteBranch.name()) : null,
             'history': remoteHistory ? remoteHistory.map(function (commit, idx) {
                 return {
                     sha: commit.sha(),
@@ -188,41 +193,34 @@ async function getMultiBranchHistory(repo, branchOneHead, branchOneBranch, branc
     const mergedHistory = await getHistory(repo, mergeCommit, 3);
 
     return {
-        'isMultiBranch' : true,
-        'local' : {
-            'branches': [
-                {
-                    'branchName': branchOneBranch.name().replace("refs/heads/", ""),
-                    'history': branchOneHistory.map(function(commit, idx) {
-                        return {
-                            sha: commit.sha(),
-                            isAhead: false,
-                        };
-                    }),
-                },
-                {
-                    'branchName': branchTwoBranch.name().replace("refs/heads/", ""),
-                    'history': branchTwoHistory.map(function(commit, idx) {
-                        return {
-                            sha: commit.sha(),
-                            isAhead: false,
-                        };
-                    }),
-                }
-            ],
-            'merged': mergedHistory.map(function(commit, idx) {
-                return {
-                    sha: commit.sha(),
-                    isAhead: false,
-                };
-            })
-        },
-        'remote': {
-            msg: "MSG_NO_REMOTE",
-            branchName: null,
-            history: null
-        }
-    }
+        'isMultiBranch': true,
+        'branches': [
+            {
+                'branchName': getShortBranchName(branchOneBranch.name()),
+                'history': branchOneHistory.map(function(commit, idx) {
+                    return {
+                        sha: commit.sha(),
+                        isAhead: false,
+                    };
+                }),
+            },
+            {
+                'branchName': getShortBranchName(branchTwoBranch.name()),
+                'history': branchTwoHistory.map(function(commit, idx) {
+                    return {
+                        sha: commit.sha(),
+                        isAhead: false,
+                    };
+                }),
+            }
+        ],
+        'merged': mergedHistory.map(function(commit, idx) {
+            return {
+                sha: commit.sha(),
+                isAhead: false,
+            };
+        })
+    };
 }
 
 async function getCurrentBranchHistoryFromMaster(repoPath) {
@@ -241,7 +239,33 @@ async function getCurrentBranchHistoryFromMaster(repoPath) {
     }
 
     const masterBranch = await nodegit.Branch.lookup(repo, "master", nodegit.Branch.BRANCH.LOCAL);
-    return await getMultiBranchHistory(repo, masterHead, masterBranch, currentHead, currentBranch);
+    const localHistory = await getMultiBranchHistory(repo, masterHead, masterBranch, currentHead, currentBranch);
+
+    // get the corresponding upstream reference
+    const remoteBranch = await getRemote(currentBranch);
+
+    let noRemoteMsg;
+    let remoteHistory;
+
+    if (remoteBranch) {
+        const remoteMaster = await getRemote(masterBranch);
+
+        const remoteMasterHead = await nodegit.Commit.lookup(repo, remoteMaster.target());
+        const remoteBranchHead = await nodegit.Commit.lookup(repo, remoteBranch.target());
+
+        remoteHistory = await getMultiBranchHistory(repo, remoteMasterHead, remoteMaster, remoteBranchHead, remoteBranch);
+    } else {
+        // check if there is a remote branch with the same name that is just untracked.
+        noRemoteMsg = await checkForUntrackedRemote(repo, currentBranch);
+    }
+
+    return {
+        'local': localHistory,
+        'remote': {
+            msg: noRemoteMsg,
+            ...remoteHistory
+        }
+    };
 }
 
 /**
@@ -258,4 +282,5 @@ async function getCurrentBranchHistory(repoPath) {
     return await getSingleBranchHistory(repo, localHead, currentBranch, goBackCommits);
 }
 
-module.exports.get = getCurrentBranchHistoryFromMaster;
+module.exports.getCurrentFromMaster = getCurrentBranchHistoryFromMaster;
+module.exports.getCurrent = getCurrentBranchHistory;
