@@ -77,10 +77,27 @@ function getShortBranchName(longname) {
         .replace("refs/heads/", "");
 }
 
+/**
+ * given an array of commit history, return an array of commit information we care about
+ * for display purposes
+ * @param history
+ * @param branchAheadBy
+ * @returns {*}
+ */
+function getCommitHistory(history, branchAheadBy) {
+    return history.map(function(commit, idx) {
+        return {
+            sha: commit.sha(),
+            isAhead: branchAheadBy > 0 && idx < branchAheadBy,
+        };
+    });
+}
+
 module.exports = {
     openRepo: openRepo,
     getHistory: getHistory,
     getHistoryUntil: getHistoryUntil,
     getRemote: getRemote,
     getShortBranchName: getShortBranchName,
+    getCommitHistory: getCommitHistory,
 };

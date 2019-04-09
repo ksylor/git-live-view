@@ -26,7 +26,6 @@
 
     .sub-enviro {
       flex-basis: 100%;
-      justify-content: space-between;
     }
   }
 
@@ -82,6 +81,13 @@
   padding-left: 15px;
 }
 
+.multi-branch-wrap {
+  flex-basis: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
 .multi-branch {
   display: flex;
 }
@@ -93,6 +99,7 @@
 .multi-branch + .branch {
   width: 50%;
   margin: 0 auto;
+  flex-basis: auto;
 }
 
 .commit {
