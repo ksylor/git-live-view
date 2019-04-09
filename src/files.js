@@ -11,6 +11,8 @@ function getDeets(file, indexOrWorkspace) {
         "path": file.path(),
         "status": file.status().filter(
             status => status.split("_")[0] === indexOrWorkspace
+        ).map(
+            status => status.split("_")[1]
         ),
     }
 }
@@ -25,17 +27,32 @@ async function getStatus(repoPath) {
 
     const statuses = await repo.getStatus();
 
-    const index = statuses.filter(file => file.inIndex());
+    const index = statuses.filter(
+        file => file.inIndex()
+    ).map(
+        file => getDeets(file, "INDEX")
+    );
 
-    const working = statuses.filter(file => file.inWorkingTree());
+    const working = statuses.filter(
+        file => file.inWorkingTree()
+    ).map(
+        file => getDeets(file, "WT")
+    );
+
+    // conflicted files are technically not in the workspace
+    // but git makes it seem like they are so let's put them in there.
+    const conflict = statuses.filter(
+        file => file.isConflicted()
+    ).map(function(file) {
+        return {
+            "path": file.path(),
+            "status": ["CONFLICT"]
+        }
+    });
 
     return {
-        "index": index.map(function(file) {
-            return getDeets(file, "INDEX");
-        }),
-        "workspace": working.map(function(file) {
-            return getDeets(file, "WT");
-        }),
+        "index": index,
+        "workspace": [ ...working, ...conflict ]
     };
 }
 

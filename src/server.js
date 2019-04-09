@@ -6,6 +6,10 @@ const chokidar = require('chokidar');
 const branches = require('./branches');
 const files = require('./files');
 
+const DEFAULT_SETTINGS = {
+    showWithMaster: true,
+};
+
 // get the repo at the path passed in via command line
 // TODO: confirm that the repo path is a legit git instance
 const repoPath = process.argv[2].split('=')[1];
@@ -48,9 +52,7 @@ sio.on('connection', async function(socket) {
     let sessionData = socket.request.session;
 
     // initialize settings
-    sessionData.settings = {
-        showWithMaster: true,
-    };
+    sessionData.settings = DEFAULT_SETTINGS;
     sessionData.save();
 
     // get the initial status

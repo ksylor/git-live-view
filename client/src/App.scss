@@ -131,9 +131,12 @@
 .files {
   display: flex;
   flex-direction: column;
-  justify-content: space-around;
   flex-basis: 100%;
   list-style-type: square;
+}
+
+.file {
+  margin: .5em 0;
 }
 
 .file-status {
