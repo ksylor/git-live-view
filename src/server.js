@@ -6,8 +6,8 @@ const chokidar = require('chokidar');
 const branches = require('./branches');
 const files = require('./files');
 
+// get the repo at the path passed in via command line
 // TODO: confirm that the repo path is a legit git instance
-// and error out if it isn't
 const repoPath = process.argv[2].split('=')[1];
 console.log('Repo path: ' + repoPath);
 
@@ -25,10 +25,11 @@ const session = expressSession({
     'saveUninitialized': true,
 });
 
+// add the session middleware
 app.use(session);
 
 // create a new server
-server = app.listen(port, function(req, res, next){
+server = app.listen(port, function(req, res, next) {
     console.log('server is running on port 5000')
 });
 
@@ -41,7 +42,7 @@ sio.use(function(socket, next) {
 
 app.use(session);
 
-sio.on('connection', async (socket) => {
+sio.on('connection', async function(socket) {
     console.log('Socket created: ' + socket.id);
 
     let sessionData = socket.request.session;
@@ -50,22 +51,33 @@ sio.on('connection', async (socket) => {
     sessionData.settings = {
         showWithMaster: true,
     };
-
     sessionData.save();
 
+    // get the initial status
     const data = await getStatus(sessionData.settings);
+    // send data to client
     sio.emit('UPDATE', data);
 
-    // watch for any file changes
+    // watch for any file changes in the git repo and
+    // send updated status to the client
     watcher.on('all', async (event, path) => {
         console.log(event, path);
-        // if (path.indexOf('/objects/') < 0 && path.indexOf('.git/index') < 0) {
-        //     console.log('\n');
-        //     file = fs.readFileSync(path, 'utf-8');
-        //     console.log(file);
-        //     console.log('\n');
-        // }
+        // get updated status
         const data = await getStatus(sessionData.settings);
+
+        // TODO: only send update if the data has changed
+        sio.emit('UPDATE', data);
+    });
+
+    // handle when user changes settings in the UI
+    sio.on('SETTINGS', async function(settings) {
+        sessionData.settings = settings;
+        sessionData.save();
+
+        // get new data with new settings
+        const data = await getStatus(sessionData.settings);
+
+        // TODO: only send update if the data has changed
         sio.emit('UPDATE', data);
     });
 });
