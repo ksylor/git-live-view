@@ -21,7 +21,7 @@ async function openRepo(repoPath) {
  * @returns {Promise<Array<Commit>>}
  */
 async function getHistory(repo, commit, numCommits) {
-    var walker = nodegit.Revwalk.create(repo);
+    const walker = nodegit.Revwalk.create(repo);
     walker.sorting(nodegit.Revwalk.SORT.TIME);
     walker.push(commit.id());
     return walker.getCommits(numCommits);
@@ -40,13 +40,40 @@ async function getHistoryUntil(repo, startCommit, endCommitId) {
         return [];
     }
 
-    var walker = nodegit.Revwalk.create(repo);
+    const walker = nodegit.Revwalk.create(repo);
     walker.sorting(nodegit.Revwalk.SORT.TIME);
     walker.push(startCommit.id());
 
     return walker.getCommitsUntil(function(checkCommit) {
         return !checkCommit.id().equal(endCommitId);
     });
+}
+
+/**
+ * searches the history of a branch for a specific commit
+ * returns -1 if the commit wasn't found, else returns the 0-index position of the
+ * commit in history
+ * @param repo
+ * @param branchHead
+ * @param commitToFind
+ * @returns {Promise<int>}
+ */
+async function searchHistoryForCommit(repo, branchHead, commitToFind) {
+    if (branchHead.id().equal(commitToFind)) {
+        return 0;
+    }
+    const walker = nodegit.Revwalk.create(repo);
+    walker.sorting(nodegit.Revwalk.SORT.TIME);
+    walker.push(branchHead.id());
+
+    let found = false;
+    const history = await walker.getCommitsUntil(function(checkCommit) {
+        if (checkCommit.id().equal(commitToFind)) {
+            found = true;
+        }
+        return !checkCommit.id().equal(commitToFind);
+    });
+    return found ? history.length -1 : -1;
 }
 
 /**
@@ -100,4 +127,5 @@ module.exports = {
     getRemote: getRemote,
     getShortBranchName: getShortBranchName,
     getCommitHistory: getCommitHistory,
+    searchHistoryForCommit: searchHistoryForCommit,
 };

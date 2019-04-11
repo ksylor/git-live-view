@@ -39,7 +39,7 @@ async function getStatus(repoPath) {
         file => getDeets(file, "WT")
     );
 
-    // conflicted files are technically not in the workspace
+    // conflicted files during merge/rebase are technically not in the workspace
     // but git makes it seem like they are so let's put them in there.
     const conflict = statuses.filter(
         file => file.isConflicted()

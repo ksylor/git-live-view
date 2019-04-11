@@ -2,9 +2,13 @@ const express = require('express');
 const expressSession = require('express-session');
 const socket = require('socket.io');
 const chokidar = require('chokidar');
+const fs = require('fs');
+const nodegit = require('nodegit');
 
 const branches = require('./branches');
 const files = require('./files');
+const rebaseMerge = require('./rebase-merge');
+const utils = require('./utils');
 
 const DEFAULT_SETTINGS = {
     showWithMaster: true,
@@ -46,6 +50,7 @@ sio.use(function(socket, next) {
 
 app.use(session);
 
+// everything that happens during a session goes in here
 sio.on('connection', async function(socket) {
     console.log('Socket created: ' + socket.id);
 
@@ -56,7 +61,18 @@ sio.on('connection', async function(socket) {
     sessionData.save();
 
     // get the initial status
-    const data = await getStatus(sessionData.settings);
+    let data;
+    const repo = await utils.openRepo(repoPath);
+
+    if (repo.isRebasing()) {
+        // rebase in progress
+        data = await getRebaseStatus(sessionData.settings);
+    } else if (repo.isMerging()) {
+        // merge in progress
+    } else {
+        data = await getStatus(sessionData.settings);
+    }
+
     // send data to client
     sio.emit('UPDATE', data);
 
@@ -64,8 +80,17 @@ sio.on('connection', async function(socket) {
     // send updated status to the client
     watcher.on('all', async (event, path) => {
         console.log(event, path);
-        // get updated status
-        const data = await getStatus(sessionData.settings);
+
+        let data;
+
+        if (repo.isRebasing()) {
+            // rebase in progress
+            data = await getRebaseStatus(sessionData.settings);
+        } else if (repo.isMerging()) {
+            // merge in progress
+        } else {
+            data = await getStatus(sessionData.settings);
+        }
 
         // TODO: only send update if the data has changed
         sio.emit('UPDATE', data);
@@ -96,6 +121,21 @@ async function getStatus(settings) {
         ...branchStatus,
         ...fileStatus
     };
+}
+
+async function getRebaseStatus(settings) {
+    const rebaseStatus = await rebaseMerge.getRebase(repoPath);
+
+    console.log(rebaseStatus);
+
+    const fileStatus = await files.get(repoPath);
+
+    return {
+        rebaseInProgress: true,
+        settings: settings,
+        ...rebaseStatus,
+        ...fileStatus
+    }
 }
 
 app.get('/api/status', async (req, res) => {

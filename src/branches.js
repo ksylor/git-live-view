@@ -1,7 +1,7 @@
 const nodegit = require("nodegit");
 const utils = require("./utils");
 
-// TODO: make this configurable in settings
+// TODO: make this configurable in settings?
 const COMMITS_TO_DISPLAY = 8;
 const MERGED_HISTORY_LENGTH = 3;
 
@@ -282,6 +282,7 @@ async function getCurrentBranchHistory(repoPath) {
 }
 
 module.exports = {
+    getNormalizedSingleBranchHistory: getNormalizedSingleBranchHistory,
     getCurrentFromMaster: getCurrentBranchHistoryFromMaster,
     getCurrent: getCurrentBranchHistory
 };
