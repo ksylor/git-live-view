@@ -12,9 +12,20 @@ class Commit extends Component {
         return  classes.join(" ");
     }
 
+    getTooltip() {
+
+    }
+
     render() {
         return (
-            <li className={this.getClassNames()} id={this.props.isRebaseOnto? "rebase-onto" : ""}>
+            <li className={this.getClassNames()}
+                id={this.props.isRebaseOnto ? "rebase-onto" : false}
+                {...(this.props.isRebaseOnto
+                    ? { "data-tooltip": "this is the commit your rebase will be re-played onto" }
+                    : this.props.isRebasingCommit
+                        ? { "data-tooltip": "this commit is included in your rebase"}
+                        : false)}
+            >
                 <span className="commit-truncate">{this.props.hash}</span>
                 {/*{ this.props.isRebasingCommit*/}
                 {/*    ? <span className="tag">{this.props.rebaseAction}</span> : "" }*/}

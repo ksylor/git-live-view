@@ -117,20 +117,28 @@
   }
 }
 
+$brdr: 5px solid darkorange;
+
+#rebase-onto {
+  background: darkorange;
+  color: white;
+  border: $brdr;
+}
+
 .commit-is-ahead {
   color: red;
 }
 
 li.commit-is-rebasing {
-  border-left: 5px solid darkorange;
-  border-right: 5px solid darkorange;
+  border-left: $brdr;
+  border-right: $brdr;
 
   &:first-of-type {
-    border-top: 5px solid darkorange;
+    border-top: $brdr;
   }
 
   & + li:not(.commit-is-rebasing) {
-    border-top: 5px solid darkorange;
+    border-top: $brdr;
   }
 }
 
@@ -171,4 +179,54 @@ li.commit-is-rebasing {
   background: darkorange;
   color: white;
   text-align: center;
+}
+
+[data-tooltip] {
+  position: relative;
+  cursor: pointer;
+
+  &:before,
+  &:after {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 200ms ease-in-out;
+  }
+
+  &:before {
+    position: absolute;
+    left:100%;
+    top:50%;
+    margin-left:-2px;
+    content: "";
+    background: no-repeat url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http://www.w3.org/2000/svg%22%20width%3D%2212px%22%20height%3D%2236px%22%3E%3Cpath%20fill%3D%22rgba(0,0,0,0.8)%22%20transform%3D%22rotate(90 6 6)%22%20d%3D%22M2.658,0.000%20C-13.615,0.000%2050.938,0.000%2034.662,0.000%20C28.662,0.000%2023.035,12.002%2018.660,12.002%20C14.285,12.002%208.594,0.000%202.658,0.000%20Z%22/%3E%3C/svg%3E");
+    background-size: 100% auto;
+    width: 10px;
+    height: 26px;
+    z-index: 100;
+    transform: translate(0, -50%);
+  }
+
+  &:after {
+    left:100%;
+    top:50%;
+    margin-left:8px;
+    transform: translateX(0%)   translateY(-50%);
+    content: attr(data-tooltip);
+    position: absolute;
+    background: rgba(0,0,0,0.8);
+    text-align: center;
+    color: #fff;
+    padding:6px;
+    font-size: 14px;
+    min-width: 80px;
+    border-radius: 5px;
+    pointer-events: none;
+  }
+
+  &:hover:before,
+  &:hover:after {
+    visibility: visible;
+    opacity: 1;
+  }
 }
