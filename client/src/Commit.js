@@ -26,6 +26,7 @@ class Commit extends Component {
                         ? { "data-tooltip": "this commit is included in your rebase"}
                         : false)}
             >
+                <span className="commit-dot"><svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="10"/></svg></span>
                 <span className="commit-truncate">{this.props.hash}</span>
                 {/*{ this.props.isRebasingCommit*/}
                 {/*    ? <span className="tag">{this.props.rebaseAction}</span> : "" }*/}

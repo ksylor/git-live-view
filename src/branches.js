@@ -121,7 +121,7 @@ async function getNormalizedSingleBranchHistory(repo, localHead, localBranch, nu
         },
         'remote' : {
             'msg': noRemoteMsg,
-            'branchName': remoteBranch ? utils.getShortBranchName(remoteBranch.name()) : null,
+            'branchName': remoteBranch ? utils.getShortBranchName(remoteBranch.name()) : utils.getShortBranchName(localBranch.name()),
             'history': remoteHistory ? utils.getCommitHistory(remoteHistory, remoteAheadBy) : null,
         }
     };
@@ -133,6 +133,7 @@ async function getNormalizedSingleBranchHistory(repo, localHead, localBranch, nu
  *
  * Will return the history of both branches back until the merge_base as separate
  * data structures, then returns the merged branch history up to MERGED_HISTORY_LENGTH
+ *
  * @param repo
  * @param branchOneHead
  * @param branchOneBranch
@@ -187,6 +188,72 @@ async function getMultiBranchHistory(
 }
 
 /**
+ * gets the history for two branches from both local and remote environments
+ * Branch one will be on the left of the screen so make that master
+ * assumes that the branches do have a shared history!
+ *
+ * This will abort getting remote history if any of the branches passed in do not have
+ * remote history. will leave it up to calling function to determine what to do.
+ *
+ * @param repo
+ * @param branchOne
+ * @param branchOneHead
+ * @param branchTwo
+ * @param branchTwoHead
+ * @returns {Promise<{remote: {msg: string}, local: ({merged: *, branches: {branchName: string, history: *}[], isMultiBranch: boolean}|Array)}>}
+ */
+async function getMultiBranchLocalAndRemoteHistory(repo, branchOne, branchOneHead, branchTwo, branchTwoHead) {
+    let branchOneRemoteAheadBy = 0;
+    let branchOneLocalAheadBy = 0;
+
+    let branchTwoRemoteAheadBy = 0;
+    let branchTwoLocalAheadBy = 0;
+
+    let noRemoteMsg;
+    let remoteHistory;
+
+    // get the corresponding upstream reference for each branch
+    const branchOneRemote = await utils.getRemote(branchOne);
+    let branchTwoRemote = await utils.getRemote(branchTwo);
+
+    if (branchOneRemote && branchTwoRemote) {
+        // get the remote branch head
+        let branchOneRemoteHead = await nodegit.Commit.lookup(repo, branchOneRemote.target());
+
+        // get difference in commits local vs. remote for current branch
+        let branchOneAheadBy = await getDifferenceBetweenLocalRemote(repo, branchOneHead, branchOneRemoteHead);
+        // update higher-scope variables
+        branchOneRemoteAheadBy = branchOneAheadBy.remoteAhead;
+        branchOneLocalAheadBy = branchOneAheadBy.localAhead;
+
+        let branchTwoRemoteHead = await nodegit.Commit.lookup(repo, branchTwoRemote.target());
+
+        // get difference in commits local vs. remote for master
+        let branchTwoAheadBy = await getDifferenceBetweenLocalRemote(repo, branchTwoHead, branchTwoRemoteHead);
+
+        // update higher-scope variables
+        branchTwoRemoteAheadBy = branchTwoAheadBy.remoteAhead;
+        branchTwoLocalAheadBy = branchTwoAheadBy.localAhead;
+
+        // get the combined Remote history of branch & master
+        remoteHistory = await getMultiBranchHistory(repo,
+            branchOneRemoteHead, branchOneRemote, branchOneRemoteAheadBy,
+            branchTwoRemoteHead, branchTwoRemote, branchTwoRemoteAheadBy);
+    }
+
+    // now that we know if local is ahead, we can
+    // get the local history of branch & master
+    const localHistory = await getMultiBranchHistory(repo,
+        branchOneHead, branchOne, branchOneLocalAheadBy,
+        branchTwoHead, branchTwo, branchTwoLocalAheadBy);
+
+    return {
+        'local': localHistory,
+        'remote': remoteHistory
+    };
+}
+
+/**
  * Get the history of the repo's currently checked-out branch plus where it branches off of master
  * for both local and remote
  * @param repoPath
@@ -199,6 +266,8 @@ async function getCurrentBranchHistoryFromMaster(repoPath) {
     const currentHead = await repo.getHeadCommit();
     const currentBranch = await repo.getCurrentBranch();
 
+    console.log(currentBranch.name());
+
     // get the master branch's head commit
     const masterHead = await repo.getMasterCommit();
     const masterBranch = await nodegit.Branch.lookup(repo, "master", nodegit.Branch.BRANCH.LOCAL);
@@ -209,61 +278,18 @@ async function getCurrentBranchHistoryFromMaster(repoPath) {
         return await getNormalizedSingleBranchHistory(repo, currentHead, currentBranch, COMMITS_TO_DISPLAY);
     }
 
-    let masterRemoteAheadBy = 0;
-    let masterLocalAheadBy = 0;
+    // get the full history of both remote & local checked out branch
+    const history = await getMultiBranchLocalAndRemoteHistory(repo, masterBranch, masterHead, currentBranch, currentHead);
 
-    let branchRemoteAheadBy = 0;
-    let branchLocalAheadBy = 0;
-
-    let noRemoteMsg;
-    let remoteHistory;
-
-    // get the corresponding upstream reference for this branch
-    const remoteBranch = await utils.getRemote(currentBranch);
-
-    if (remoteBranch) {
-        // get the remote master info
-        let remoteMaster = await utils.getRemote(masterBranch);
-        let remoteMasterHead = await nodegit.Commit.lookup(repo, remoteMaster.target());
-
-        // get difference in commits local vs. remote for master
-        let masterAheadBy = await getDifferenceBetweenLocalRemote(repo, masterHead, remoteMasterHead);
-        // update higher-scope variables
-        masterRemoteAheadBy = masterAheadBy.remoteAhead;
-        masterLocalAheadBy = masterAheadBy.localAhead;
-
-        // get the remote branch head
-        let remoteBranchHead = await nodegit.Commit.lookup(repo, remoteBranch.target());
-
-        // get difference in commits local vs. remote for current branch
-        let branchAheadBy = await getDifferenceBetweenLocalRemote(repo, currentHead, remoteBranchHead);
-        // update higher-scope variables
-        branchRemoteAheadBy = branchAheadBy.remoteAhead;
-        branchLocalAheadBy = branchAheadBy.localAhead;
-
-        // get the combined Remote history of branch & master
-        remoteHistory = await getMultiBranchHistory(repo,
-            remoteMasterHead, remoteMaster, masterRemoteAheadBy,
-            remoteBranchHead, remoteBranch, branchRemoteAheadBy);
-    } else {
+    if (!history.remote) {
         // check if there is a remote branch with the same name that is just untracked.
         // if there isnt' a remote branch, don't bother showing the remote master
-        noRemoteMsg = await checkForUntrackedRemote(repo, currentBranch);
+        history.remote = {};
+        history.remote.msg = await checkForUntrackedRemote(repo, currentBranch);
+        history.remote.branchName = utils.getShortBranchName(currentBranch.name());
     }
 
-    // now that we know if local is ahead, we can
-    // get the local history of branch & master
-    const localHistory = await getMultiBranchHistory(repo,
-        masterHead, masterBranch, masterLocalAheadBy,
-        currentHead, currentBranch, branchLocalAheadBy);
-
-    return {
-        'local': localHistory,
-        'remote': {
-            msg: noRemoteMsg,
-            ...remoteHistory
-        }
-    };
+    return history;
 }
 
 /**
@@ -283,6 +309,8 @@ async function getCurrentBranchHistory(repoPath) {
 
 module.exports = {
     getNormalizedSingleBranchHistory: getNormalizedSingleBranchHistory,
+    getMultiBranchLocalAndRemoteHistory: getMultiBranchLocalAndRemoteHistory,
+    checkForUntrackedRemote: checkForUntrackedRemote,
     getCurrentFromMaster: getCurrentBranchHistoryFromMaster,
     getCurrent: getCurrentBranchHistory
 };

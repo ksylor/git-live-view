@@ -7,7 +7,7 @@ const nodegit = require('nodegit');
 
 const branches = require('./branches');
 const files = require('./files');
-const rebaseMerge = require('./rebase-merge');
+const rebase = require('./rebase');
 const utils = require('./utils');
 
 const DEFAULT_SETTINGS = {
@@ -124,7 +124,7 @@ async function getStatus(settings) {
 }
 
 async function getRebaseStatus(settings) {
-    const rebaseStatus = await rebaseMerge.getRebase(repoPath);
+    const rebaseStatus = await rebase.getRebase(repoPath);
 
     console.log(rebaseStatus);
 
