@@ -56,6 +56,8 @@ class App extends Component {
 
         return (
           <div className="wrapper">
+              { this.state.data.rebaseInProgress ?
+                  <div className="notice"><h2>Hi! It appears you are in the middle of a rebase!</h2></div> : "" }
               <Enviro title="Github" type="hub">
                   <SubEnviro title="Remote" type="remote">
                       { this.state.data.remote.msg

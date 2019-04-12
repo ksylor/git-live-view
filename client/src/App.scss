@@ -121,6 +121,19 @@
   color: red;
 }
 
+li.commit-is-rebasing {
+  border-left: 5px solid darkorange;
+  border-right: 5px solid darkorange;
+
+  &:first-of-type {
+    border-top: 5px solid darkorange;
+  }
+
+  & + li:not(.commit-is-rebasing) {
+    border-top: 5px solid darkorange;
+  }
+}
+
 .commit-truncate {
   display: inline-block;
   text-overflow: ellipsis;
@@ -139,7 +152,7 @@
   margin: .5em 0;
 }
 
-.file-status {
+.tag {
   line-height: 1;
   display: inline-block;
   font-size: small;
@@ -148,4 +161,14 @@
   color: white;
   float: right;
   border-radius: 4px;
+}
+
+.notice {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: darkorange;
+  color: white;
+  text-align: center;
 }
