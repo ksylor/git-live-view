@@ -8,6 +8,10 @@ const files = require('./files');
 
 const DEFAULT_SETTINGS = {
     showWithMaster: true,
+
+    // these don't actually get passed to the rest of the server code yet!
+    commitsToDisplay: 8,
+    mergedHistoryLength: 3,
 };
 
 // get the repo at the path passed in via command line
@@ -73,6 +77,7 @@ sio.on('connection', async function(socket) {
 
     // handle when user changes settings in the UI
     sio.on('SETTINGS', async function(settings) {
+        console.log('SETTINGS', settings);
         sessionData.settings = settings;
         sessionData.save();
 

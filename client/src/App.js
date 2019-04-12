@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import io from 'socket.io-client';
+import Settings from './Settings';
 import Enviro from './Enviro';
 import SubEnviro from './SubEnviro';
 import Branch from './Branch';
@@ -55,32 +56,38 @@ class App extends Component {
         }
 
         return (
-          <div className="wrapper">
-              <Enviro title="Github" type="hub">
-                  <SubEnviro title="Remote" type="remote">
-                      { this.state.data.remote.msg
-                          ? <p className="no-upstream">{this.getNoRemoteMessage(this.state.data.remote.msg, this.state.data.local.branchName)}</p>
-                          : this.state.data.remote.isMultiBranch
-                          ? <MultiBranch {...this.state.data.remote} />
-                          : <Branch {...this.state.data.remote} /> }
-                  </SubEnviro>
-              </Enviro>
-              <Enviro title="Your Machine" type="machine">
-                  <SubEnviro title="Local" type="local">
-                      { this.state.data.local.isMultiBranch
-                        ? <MultiBranch {...this.state.data.local} />
-                        : <Branch {...this.state.data.local} />
-                      }
-                  </SubEnviro>
-                  <SubEnviro title="Index/Staging" type="index">
-                      <Files list={this.state.data.index} />
-                  </SubEnviro>
-                  <SubEnviro title="Workspace" type="workspace">
-                      <Files list={this.state.data.workspace} />
-                  </SubEnviro>
-              </Enviro>
+            <div className="wrapper">
+                <Settings settings={this.state.data.settings} onSettingsChange={this.onSettingsChange.bind(this)} />
+                <Enviro title="Github" type="hub">
+                    <SubEnviro title="Remote" type="remote">
+                        { this.state.data.remote.msg
+                            ? <p className="no-upstream">{this.getNoRemoteMessage(this.state.data.remote.msg, this.state.data.local.branchName)}</p>
+                            : this.state.data.remote.isMultiBranch
+                            ? <MultiBranch {...this.state.data.remote} />
+                            : <Branch {...this.state.data.remote} /> }
+                    </SubEnviro>
+                </Enviro>
+                <Enviro title="Your Machine" type="machine">
+                    <SubEnviro title="Local" type="local">
+                        { this.state.data.local.isMultiBranch
+                            ? <MultiBranch {...this.state.data.local} />
+                            : <Branch {...this.state.data.local} />
+                        }
+                    </SubEnviro>
+                    <SubEnviro title="Index/Staging" type="index">
+                        <Files list={this.state.data.index} />
+                    </SubEnviro>
+                    <SubEnviro title="Workspace" type="workspace">
+                        <Files list={this.state.data.workspace} />
+                    </SubEnviro>
+                </Enviro>
           </div>
         );
+    }
+
+    onSettingsChange(settings) {
+        console.log(this.socket);
+        this.socket.emit('SETTINGS', settings);
     }
 }
 
