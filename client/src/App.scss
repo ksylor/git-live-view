@@ -115,8 +115,10 @@
 .commit {
   display: flex;
   position: relative;
-  padding: 1em 0;
+  padding: 1em .25em;
   align-items: center;
+  border-left: 3px solid transparent;
+  border-right: 3px solid transparent;
 }
 
 .commit-dot {
@@ -151,7 +153,6 @@
   height: auto;
   width: auto;
   background: none;
-  left: 7px;
   top: 50%;
   height: auto !important;
   bottom: auto !important;
@@ -193,9 +194,10 @@ li.commit-is-rebasing {
   border-right: $brdr;
   padding-left: .25em;
   padding-right: .25em;
+  border-top: $brdr;
 
-  &:first-of-type {
-    border-top: $brdr;
+  ~ li.commit-is-rebasing {
+    border-top: none;
   }
 
   &:last-child {
