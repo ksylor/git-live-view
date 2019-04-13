@@ -61,7 +61,7 @@ class App extends Component {
               <Enviro title="Github" type="hub">
                   <SubEnviro title="Remote" type="remote">
                       { this.state.data.remote.msg
-                          ? <p className="no-upstream">{this.getNoRemoteMessage(this.state.data.remote.msg, this.state.data.remote.branchName)}</p>
+                          ? this.getNoRemoteMessage(this.state.data.remote.msg, this.state.data.remote.branchName)
                           : this.state.data.remote.isMultiBranch
                           ? <MultiBranch {...this.state.data.remote} />
                           : <Branch {...this.state.data.remote} /> }
