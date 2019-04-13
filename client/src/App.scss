@@ -31,6 +31,7 @@
 
   &.machine {
     flex-basis: 75%;
+    padding-left: 0;
 
     .sub-enviro {
       flex-basis: 33.333%;
@@ -51,6 +52,7 @@
 .sub-enviro {
   padding-left: .5em;
   padding-right: .5em;
+  padding-bottom: .5em;
   display: flex;
   flex-direction: column;
 
@@ -72,15 +74,6 @@
   font-family: monospace;
 }
 
-.branch-commits {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  flex-basis: 100%;
-  margin: 0;
-  padding-left: 15px;
-}
-
 .multi-branch-wrap {
   flex-basis: 100%;
   display: flex;
@@ -94,38 +87,142 @@
 
 .multi-branch .branch {
   flex-basis: 50%;
+  z-index: 1;
 }
 
+.multi-branch .branch:first-child {
+  z-index: 100;
+  margin-right: 1.5em;
+}
+
+// the merged branch
 .multi-branch + .branch {
   width: 50%;
   margin: 0 auto;
   flex-basis: auto;
 }
 
-.commit {
-  position: relative;
-  padding: 1em 0;
+.branch-commits {
+  list-style-type: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  flex-basis: 100%;
+  margin: 0;
+}
 
-  &:before {
-    content: "";
-    position: absolute;
-    height: 3em;
-    width: 1px;
-    background-color: black;
-    left: -15px;
-    top: 50%;
+.commit {
+  display: flex;
+  position: relative;
+  padding: 1em .25em;
+  align-items: center;
+  border-left: 3px solid transparent;
+  border-right: 3px solid transparent;
+}
+
+.commit-dot {
+  display: inline-block;
+  flex-basis: 14px;
+  line-height: 14px;
+  flex-shrink: 0;
+  color: #FFA500;
+
+  svg {
+    fill: currentColor;
   }
 }
 
-.commit-is-ahead {
-  color: red;
+.commit-line {
+  position: absolute;
+  height: 100%;
+  width: 3px;
+  background: #FFA500;
+  top: 28px;
+  margin-left: 5px;
+  z-index: -1;
+
+  .commit:last-child & {
+    height: 50%;
+    bottom: 0;
+  }
+}
+
+.commit-line-angled {
+  position: absolute;
+  height: auto;
+  width: auto;
+  background: none;
+  top: 50%;
+  height: auto !important;
+  bottom: auto !important;
+
+  svg {
+    stroke-width: 3px;
+    stroke: #FFA500;
+  }
 }
 
 .commit-truncate {
   display: inline-block;
   text-overflow: ellipsis;
-  max-width: 5em;
+  max-width: 7em;
   overflow: hidden;
+  font-family: monospace;
+  margin-left: .5em;
+}
+
+.commit-is-ahead {
+  color: darkred;
+  & .commit-line {
+    color: darkred;
+  }
+}
+
+// rebase indicators
+
+$brdr: 3px dashed darkred;
+
+#rebase-onto {
+  border: $brdr;
+  padding-left: .25em;
+  padding-right: .25em;
+}
+
+li.commit-is-rebasing {
+  border-left: $brdr;
+  border-right: $brdr;
+  padding-left: .25em;
+  padding-right: .25em;
+  border-top: $brdr;
+
+  ~ li.commit-is-rebasing {
+    border-top: none;
+  }
+
+  &:last-child {
+    border-bottom: $brdr;
+  }
+
+  & + li:not(.commit-is-rebasing) {
+    border-top: $brdr;
+  }
+}
+
+.commit-rebase-onto-indicator {
+  width: 24px;
+  color: darkred;
+  line-height: 1;
+  position: absolute;
+  right: -27px;
+  top: 50%;
+  margin-top: -12px;
+}
+
+.commit-rebase-indicator {
+  width: 12px;
+  color: darkred;
+  line-height: 1;
 }
 
 .files {
@@ -139,7 +236,7 @@
   margin: .5em 0;
 }
 
-.file-status {
+.tag {
   line-height: 1;
   display: inline-block;
   font-size: small;
@@ -148,4 +245,85 @@
   color: white;
   float: right;
   border-radius: 4px;
+}
+
+.notice {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: darkred;
+  color: white;
+  text-align: center;
+}
+
+// default tooltips to the right
+[data-tooltip] {
+  position: relative;
+  cursor: pointer;
+
+  &:before,
+  &:after {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 200ms ease-in-out;
+    position: absolute;
+    left:100%;
+    top:50%;
+  }
+
+  &:before {
+    margin-left:-2px;
+    content: "";
+    background: no-repeat url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http://www.w3.org/2000/svg%22%20width%3D%2212px%22%20height%3D%2236px%22%3E%3Cpath%20fill%3D%22rgba(0,0,0,0.8)%22%20transform%3D%22rotate(90 6 6)%22%20d%3D%22M2.658,0.000%20C-13.615,0.000%2050.938,0.000%2034.662,0.000%20C28.662,0.000%2023.035,12.002%2018.660,12.002%20C14.285,12.002%208.594,0.000%202.658,0.000%20Z%22/%3E%3C/svg%3E");
+    background-size: 100% auto;
+    width: 10px;
+    height: 26px;
+    z-index: 100;
+    transform: translate(0, -50%);
+  }
+
+  &:after {
+    margin-left:8px;
+    transform: translate(0, -50%);
+    content: attr(data-tooltip);
+    background: rgba(0,0,0,0.8);
+    text-align: center;
+    color: #fff;
+    padding:6px;
+    font-size: 14px;
+    min-width: 80px;
+    border-radius: 5px;
+    pointer-events: none;
+  }
+
+  &:hover:before,
+  &:hover:after {
+    visibility: visible;
+    opacity: 1;
+  }
+}
+
+// align the first branch's tooltips to the left
+.multi-branch .branch:first-child [data-tooltip] {
+  &:before,
+  &:after {
+    left:auto;
+    right: 100%;
+  }
+
+  &:before {
+    margin-left: 0;
+    margin-right:-2px;
+    transform: rotate(180deg);
+    top: 50%;
+    transform-origin: center center;
+    margin-top: -10px;
+  }
+
+  &:after {
+    margin-left: 0;
+    margin-right: 8px;
+  }
 }

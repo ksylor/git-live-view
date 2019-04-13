@@ -56,31 +56,33 @@ class App extends Component {
         }
 
         return (
-            <div className="wrapper">
-                <Settings settings={this.state.data.settings} onSettingsChange={this.onSettingsChange.bind(this)} />
-                <Enviro title="Github" type="hub">
-                    <SubEnviro title="Remote" type="remote">
-                        { this.state.data.remote.msg
-                            ? <p className="no-upstream">{this.getNoRemoteMessage(this.state.data.remote.msg, this.state.data.local.branchName)}</p>
-                            : this.state.data.remote.isMultiBranch
-                            ? <MultiBranch {...this.state.data.remote} />
-                            : <Branch {...this.state.data.remote} /> }
-                    </SubEnviro>
-                </Enviro>
-                <Enviro title="Your Machine" type="machine">
-                    <SubEnviro title="Local" type="local">
-                        { this.state.data.local.isMultiBranch
-                            ? <MultiBranch {...this.state.data.local} />
-                            : <Branch {...this.state.data.local} />
-                        }
-                    </SubEnviro>
-                    <SubEnviro title="Index/Staging" type="index">
-                        <Files list={this.state.data.index} />
-                    </SubEnviro>
-                    <SubEnviro title="Workspace" type="workspace">
-                        <Files list={this.state.data.workspace} />
-                    </SubEnviro>
-                </Enviro>
+          <div className="wrapper">
+              <Settings settings={this.state.data.settings} onSettingsChange={this.onSettingsChange.bind(this)} />
+              { this.state.data.rebaseInProgress ?
+                  <div className="notice"><h2>Hi! It appears you are in the middle of a rebase!</h2></div> : "" }
+              <Enviro title="Github" type="hub">
+                  <SubEnviro title="Remote" type="remote">
+                      { this.state.data.remote.msg
+                          ? this.getNoRemoteMessage(this.state.data.remote.msg, this.state.data.remote.branchName)
+                          : this.state.data.remote.isMultiBranch
+                          ? <MultiBranch {...this.state.data.remote} />
+                          : <Branch {...this.state.data.remote} /> }
+                  </SubEnviro>
+              </Enviro>
+              <Enviro title="Your Machine" type="machine">
+                  <SubEnviro title="Local" type="local">
+                      { this.state.data.local.isMultiBranch
+                        ? <MultiBranch {...this.state.data.local} />
+                        : <Branch {...this.state.data.local} />
+                      }
+                  </SubEnviro>
+                  <SubEnviro title="Index/Staging" type="index">
+                      <Files list={this.state.data.index} />
+                  </SubEnviro>
+                  <SubEnviro title="Workspace" type="workspace">
+                      <Files list={this.state.data.workspace} />
+                  </SubEnviro>
+              </Enviro>
           </div>
         );
     }
