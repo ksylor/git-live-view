@@ -52,6 +52,7 @@
 .sub-enviro {
   padding-left: .5em;
   padding-right: .5em;
+  padding-bottom: .5em;
   display: flex;
   flex-direction: column;
 
@@ -91,9 +92,10 @@
 
 .multi-branch .branch:first-child {
   z-index: 100;
-  margin-right: 1em;
+  margin-right: 1.5em;
 }
 
+// the merged branch
 .multi-branch + .branch {
   width: 50%;
   margin: 0 auto;
@@ -122,7 +124,6 @@
   flex-basis: 14px;
   line-height: 14px;
   flex-shrink: 0;
-  margin-right: .5em;
   color: #FFA500;
 
   svg {
@@ -131,30 +132,29 @@
 }
 
 .commit-line {
-  content: "";
   position: absolute;
   height: 100%;
   width: 3px;
   background: #FFA500;
   top: 28px;
-  left: 5px;
+  margin-left: 5px;
+  z-index: -1;
 
-  .commit:last-child &:after {
+  .commit:last-child & {
     height: 50%;
     bottom: 0;
-  }
-
-  &.angled {
-    transform-origin: center center;
-    top: 10px;
-    left: 0;
   }
 }
 
 .commit-line-angled {
   position: absolute;
+  height: auto;
+  width: auto;
+  background: none;
   left: 7px;
-  top: 1.5em;
+  top: 50%;
+  height: auto !important;
+  bottom: auto !important;
 
   svg {
     stroke-width: 3px;
@@ -168,23 +168,24 @@
   max-width: 7em;
   overflow: hidden;
   font-family: monospace;
-}
-
-$brdr: 5px solid darkorange;
-
-#rebase-onto {
-  background: darkorange;
-  color: white;
-  border: $brdr;
-  padding-left: .25em;
-  padding-right: .25em;
+  margin-left: .5em;
 }
 
 .commit-is-ahead {
-  color: red;
+  color: darkred;
   & .commit-line {
-    color: red;
+    color: darkred;
   }
+}
+
+// rebase indicators
+
+$brdr: 3px dashed darkred;
+
+#rebase-onto {
+  border: $brdr;
+  padding-left: .25em;
+  padding-right: .25em;
 }
 
 li.commit-is-rebasing {
@@ -204,6 +205,22 @@ li.commit-is-rebasing {
   & + li:not(.commit-is-rebasing) {
     border-top: $brdr;
   }
+}
+
+.commit-rebase-onto-indicator {
+  width: 24px;
+  color: darkred;
+  line-height: 1;
+  position: absolute;
+  right: -27px;
+  top: 50%;
+  margin-top: -12px;
+}
+
+.commit-rebase-indicator {
+  width: 12px;
+  color: darkred;
+  line-height: 1;
 }
 
 .files {
@@ -233,7 +250,7 @@ li.commit-is-rebasing {
   top: 0;
   left: 0;
   right: 0;
-  background: darkorange;
+  background: darkred;
   color: white;
   text-align: center;
 }
