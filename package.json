@@ -13,6 +13,7 @@
   "license": "CC BY-NC-SA 2.0",
   "dependencies": {
     "chokidar": "^2.1.5",
+    "deep-equal": "^1.0.1",
     "express": "^4.16.4",
     "express-session": "^1.15.6",
     "node-sass": "^4.11.0",

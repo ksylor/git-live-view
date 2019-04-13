@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import io from 'socket.io-client';
+import Settings from './Settings';
 import Enviro from './Enviro';
 import SubEnviro from './SubEnviro';
 import Branch from './Branch';
@@ -56,6 +57,7 @@ class App extends Component {
 
         return (
           <div className="wrapper">
+              <Settings settings={this.state.data.settings} onSettingsChange={this.onSettingsChange.bind(this)} />
               { this.state.data.rebaseInProgress ?
                   <div className="notice"><h2>Hi! It appears you are in the middle of a rebase!</h2></div> : "" }
               <Enviro title="Github" type="hub">
@@ -83,6 +85,11 @@ class App extends Component {
               </Enviro>
           </div>
         );
+    }
+
+    onSettingsChange(settings) {
+        console.log(this.socket);
+        this.socket.emit('SETTINGS', settings);
     }
 }
 
