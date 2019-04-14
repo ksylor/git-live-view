@@ -99,7 +99,7 @@ async function getRebaseState(repoPath, settings) {
     if (ontoBranch) {
         // get merged history of both branches
         const history = await branches.getMultiBranchLocalAndRemoteHistory(repo,
-            ontoBranch, ontoCommit, rebaseBranch, rebaseHeadCommit, settings);
+            ontoBranch, ontoCommit, rebaseBranch, rebaseHeadCommit, false, settings);
 
         // tag the affected commits in the rebasing branch
         // which is always the second branch returned

@@ -1,12 +1,6 @@
 const nodegit = require("nodegit");
 const utils = require("./utils");
 
-const DEFAULT_SETTINGS = {
-    showWithMaster: false,
-    commitsToDisplay: 8,
-    mergedHistoryLength: 3,
-};
-
 /**
  * It's possible to push up a branch to remote without also
  * setting it up as a tracking branch, check for that state
@@ -67,7 +61,7 @@ async function getDifferenceBetweenLocalRemote(repo, localHead, remoteHead) {
  * @param numCommits
  * @returns {Promise<Array<Commit>>}
  */
-async function getNormalizedSingleBranchHistory(repo, localHead, localBranch, numCommits, settings) {
+async function getNormalizedSingleBranchHistory(repo, localHead, localBranch, numCommits, isCurrentBranch, settings) {
     // get the corresponding upstream reference
     const remoteBranch = await utils.getRemote(localBranch);
 
@@ -115,6 +109,10 @@ async function getNormalizedSingleBranchHistory(repo, localHead, localBranch, nu
         noRemoteMsg = await checkForUntrackedRemote(repo, localBranch);
     }
 
+    if(settings.showHead && isCurrentBranch) {
+        localHistory[0].isHead = true;
+    }
+
     return {
         'isMultiBranch' : false,
         'local': {
@@ -153,6 +151,7 @@ async function getMultiBranchHistory(
     branchTwoHead,
     branchTwoBranch,
     branchTwoAheadBy,
+    branchTwoIsCurrentHead,
     settings
 ) {
     if (branchOneHead.id().equal(branchTwoHead.id())) {
@@ -173,6 +172,10 @@ async function getMultiBranchHistory(
 
     const mergeCommit = await nodegit.Commit.lookup(repo, mergeBase);
     const mergedHistory = await utils.getHistory(repo, mergeCommit, settings.mergedHistoryLength);
+
+    if(settings.showHead && branchTwoIsCurrentHead) {
+        branchTwoHistory[0].isHead = true;
+    }
 
     return {
         'isMultiBranch': true,
@@ -205,7 +208,7 @@ async function getMultiBranchHistory(
  * @param branchTwoHead
  * @returns {Promise<{remote: {msg: string}, local: ({merged: *, branches: {branchName: string, history: *}[], isMultiBranch: boolean}|Array)}>}
  */
-async function getMultiBranchLocalAndRemoteHistory(repo, branchOne, branchOneHead, branchTwo, branchTwoHead, settings) {
+async function getMultiBranchLocalAndRemoteHistory(repo, branchOne, branchOneHead, branchTwo, branchTwoHead, branchTwoIsCurrentHead, settings) {
     let branchOneRemoteAheadBy = 0;
     let branchOneLocalAheadBy = 0;
 
@@ -242,7 +245,7 @@ async function getMultiBranchLocalAndRemoteHistory(repo, branchOne, branchOneHea
         remoteHistory = await getMultiBranchHistory(repo,
             branchOneRemoteHead, branchOneRemote, branchOneRemoteAheadBy,
             branchTwoRemoteHead, branchTwoRemote, branchTwoRemoteAheadBy,
-            settings);
+            false, settings);
     }
 
     // now that we know if local is ahead, we can
@@ -250,7 +253,7 @@ async function getMultiBranchLocalAndRemoteHistory(repo, branchOne, branchOneHea
     const localHistory = await getMultiBranchHistory(repo,
         branchOneHead, branchOne, branchOneLocalAheadBy,
         branchTwoHead, branchTwo, branchTwoLocalAheadBy,
-        settings);
+        branchTwoIsCurrentHead, settings);
 
     return {
         'local': localHistory,
@@ -280,11 +283,11 @@ async function getCurrentBranchHistoryFromMaster(repoPath, settings) {
     // check if master is the current branch
     if (currentBranch.name() === masterBranch.name()) {
         // master is the current branch so just return single branch history
-        return await getNormalizedSingleBranchHistory(repo, currentHead, currentBranch, settings.commitsToDisplay, settings);
+        return await getNormalizedSingleBranchHistory(repo, currentHead, currentBranch, settings.commitsToDisplay, true, settings);
     }
 
     // get the full history of both remote & local checked out branch
-    const history = await getMultiBranchLocalAndRemoteHistory(repo, masterBranch, masterHead, currentBranch, currentHead, settings);
+    const history = await getMultiBranchLocalAndRemoteHistory(repo, masterBranch, masterHead, currentBranch, currentHead, true, settings);
 
     if (!history.remote) {
         // check if there is a remote branch with the same name that is just untracked.
@@ -309,7 +312,7 @@ async function getCurrentBranchHistory(repoPath, settings) {
     // get the local branch reference
     const currentBranch = await repo.getCurrentBranch();
 
-    return await getNormalizedSingleBranchHistory(repo, localHead, currentBranch, settings.commitsToDisplay, settings);
+    return await getNormalizedSingleBranchHistory(repo, localHead, currentBranch, settings.commitsToDisplay, true, settings);
 }
 
 module.exports = {

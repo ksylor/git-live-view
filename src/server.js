@@ -15,6 +15,7 @@ const DEFAULT_SETTINGS = {
     showWithMaster: false,
     commitsToDisplay: 8,
     mergedHistoryLength: 3,
+    showHead: false,
 };
 
 // get the repo at the path passed in via command line

@@ -26,12 +26,12 @@ class Settings extends Component {
     }
 
     render() {
-        let { showWithMaster, commitsToDisplay, mergedHistoryLength } = this.state.form;
+        let { showWithMaster, commitsToDisplay, mergedHistoryLength, showHead } = this.state.form;
         let update = this.updateSetting.bind(this);
         let ariaHidden = this.state.isOpen === false;
 
         if (this.state.updating) {
-            return <div>Updating ...</div>;
+            return <div className="settings-form">Updating ...</div>;
         }
 
         return (
@@ -44,6 +44,11 @@ class Settings extends Component {
                     </label>
 
                     <label>
+                        <input type="checkbox" id="showHead" checked={showHead} onChange={update} />
+                        Show HEAD
+                    </label>
+
+                    <label>
                         Commits to display:&nbsp;
                         <input id="commitsToDisplay" size="3" value={commitsToDisplay} onChange={update} />
                     </label>
@@ -52,6 +57,7 @@ class Settings extends Component {
                         Merged history length:&nbsp;
                         <input id="mergedHistoryLength" size="3" value={mergedHistoryLength} onChange={update} />
                     </label>
+
                 </fieldset>
 
                 <button type="submit" disabled={!this.haveSettingsChanged()}>Apply</button>

@@ -3,7 +3,7 @@ import Commit from './Commit';
 
 class Branch extends Component {
     render() {
-        const commits = this.props.history.map(({ sha, isAhead, isRebasingCommit, rebaseAction, isRebaseOnto }) =>
+        const commits = this.props.history.map(({ sha, isAhead, isHead, isRebasingCommit, rebaseAction, isRebaseOnto }) =>
             <Commit
                 hash={sha}
                 key={sha}
@@ -11,6 +11,7 @@ class Branch extends Component {
                 isRebasingCommit={isRebasingCommit}
                 rebaseAction={rebaseAction}
                 isRebaseOnto={isRebaseOnto}
+                isHead={isHead}
             />
         );
 

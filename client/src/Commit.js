@@ -28,6 +28,7 @@ class Commit extends Component {
                         : ""}
                 <span className="commit-truncate">{this.props.hash}</span>
                 <span className="commit-line" aria-hidden="true"></span>
+                {this.props.isHead ? <span className="tag head">HEAD</span>:""}
             </li>
         );
     }

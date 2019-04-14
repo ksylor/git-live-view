@@ -116,6 +116,7 @@ function getCommitHistory(history, branchAheadBy) {
         return {
             sha: commit.sha(),
             isAhead: branchAheadBy > 0 && idx < branchAheadBy,
+            isHead: commit.isHead,
         };
     });
 }
