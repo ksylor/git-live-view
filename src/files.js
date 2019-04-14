@@ -1,6 +1,14 @@
 const nodegit = require("nodegit");
 const utils = require("./utils");
 
+const DEFAULT_SETTINGS = {
+    showWithMaster: false,
+    commitsToDisplay: 8,
+    mergedHistoryLength: 3,
+};
+
+let SETTINGS = DEFAULT_SETTINGS;
+
 /**
  * Utiity function to get the file details we care about
  * @param file
@@ -22,7 +30,8 @@ function getDeets(file, indexOrWorkspace) {
  * @param repoPath
  * @returns {Obj}
  */
-async function getStatus(repoPath) {
+async function getStatus(repoPath, settings) {
+    SETTINGS = settings;
     const repo = await utils.openRepo(repoPath);
 
     const statuses = await repo.getStatus();

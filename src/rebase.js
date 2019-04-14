@@ -15,8 +15,17 @@ const FILE_REBASE_ORIG_HEAD = '/.git/rebase-merge/orig-head';
 const FILE_MERGE_HEAD = '/.git/MERGE_HEAD';
 const FILE_MERGE_MSG = '/.git/MERGE_MSG';
 
+const DEFAULT_SETTINGS = {
+    showWithMaster: false,
+    commitsToDisplay: 8,
+    mergedHistoryLength: 3,
+};
 
-async function getRebaseState(repoPath) {
+let SETTINGS = DEFAULT_SETTINGS;
+
+
+async function getRebaseState(repoPath, settings) {
+    SETTINGS = settings;
     const repo = await utils.openRepo(repoPath);
 
     // get the rebase command text file which will give us a list of
@@ -44,7 +53,7 @@ async function getRebaseState(repoPath) {
     // check and see if the commit is in the current branch
     const foundIndex = await utils.searchHistoryForCommit(repo, rebaseHeadCommit, ontoCommit.id());
     if (foundIndex >= 0) {
-        let branchHistory = await branches.getNormalizedSingleBranchHistory(repo, rebaseHeadCommit, rebaseBranch, foundIndex + 3);
+        let branchHistory = await branches.getNormalizedSingleBranchHistory(repo, rebaseHeadCommit, rebaseBranch, foundIndex + 3, settings);
 
         // tag the affected commits
         branchHistory.local.history = await setAffectedCommits(todoFileContents, branchHistory.local.history);
@@ -74,12 +83,10 @@ async function getRebaseState(repoPath) {
         return found;
     });
 
-    console.log(ontoBranch.name());
-
     if (ontoBranch) {
         // get merged history of both branches
         const history = await branches.getMultiBranchLocalAndRemoteHistory(repo,
-            ontoBranch, ontoCommit, rebaseBranch, rebaseHeadCommit);
+            ontoBranch, ontoCommit, rebaseBranch, rebaseHeadCommit, settings);
 
         // tag the affected commits
         history.local.branches[1].history = await setAffectedCommits(repo, todoFileContents, history.local.branches[1].history);

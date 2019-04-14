@@ -1,9 +1,11 @@
 const nodegit = require("nodegit");
 const utils = require("./utils");
 
-// TODO: make this configurable in settings?
-const COMMITS_TO_DISPLAY = 8;
-const MERGED_HISTORY_LENGTH = 3;
+const DEFAULT_SETTINGS = {
+    showWithMaster: false,
+    commitsToDisplay: 8,
+    mergedHistoryLength: 3,
+};
 
 /**
  * It's possible to push up a branch to remote without also
@@ -65,7 +67,7 @@ async function getDifferenceBetweenLocalRemote(repo, localHead, remoteHead) {
  * @param numCommits
  * @returns {Promise<Array<Commit>>}
  */
-async function getNormalizedSingleBranchHistory(repo, localHead, localBranch, numCommits) {
+async function getNormalizedSingleBranchHistory(repo, localHead, localBranch, numCommits, settings) {
     // get the corresponding upstream reference
     const remoteBranch = await utils.getRemote(localBranch);
 
@@ -132,7 +134,7 @@ async function getNormalizedSingleBranchHistory(repo, localHead, localBranch, nu
  * assumption is that the branches _do_ have a merge_base at some point!
  *
  * Will return the history of both branches back until the merge_base as separate
- * data structures, then returns the merged branch history up to MERGED_HISTORY_LENGTH
+ * data structures, then returns the merged branch history up to settings.mergedHistoryLength
  *
  * @param repo
  * @param branchOneHead
@@ -150,7 +152,8 @@ async function getMultiBranchHistory(
     branchOneAheadBy,
     branchTwoHead,
     branchTwoBranch,
-    branchTwoAheadBy
+    branchTwoAheadBy,
+    settings
 ) {
     if (branchOneHead.id().equal(branchTwoHead.id())) {
         // both branches point to the same commit
@@ -169,7 +172,7 @@ async function getMultiBranchHistory(
     branchTwoHistory.pop();
 
     const mergeCommit = await nodegit.Commit.lookup(repo, mergeBase);
-    const mergedHistory = await utils.getHistory(repo, mergeCommit, MERGED_HISTORY_LENGTH);
+    const mergedHistory = await utils.getHistory(repo, mergeCommit, settings.mergedHistoryLength);
 
     return {
         'isMultiBranch': true,
@@ -202,7 +205,7 @@ async function getMultiBranchHistory(
  * @param branchTwoHead
  * @returns {Promise<{remote: {msg: string}, local: ({merged: *, branches: {branchName: string, history: *}[], isMultiBranch: boolean}|Array)}>}
  */
-async function getMultiBranchLocalAndRemoteHistory(repo, branchOne, branchOneHead, branchTwo, branchTwoHead) {
+async function getMultiBranchLocalAndRemoteHistory(repo, branchOne, branchOneHead, branchTwo, branchTwoHead, settings) {
     let branchOneRemoteAheadBy = 0;
     let branchOneLocalAheadBy = 0;
 
@@ -238,14 +241,16 @@ async function getMultiBranchLocalAndRemoteHistory(repo, branchOne, branchOneHea
         // get the combined Remote history of branch & master
         remoteHistory = await getMultiBranchHistory(repo,
             branchOneRemoteHead, branchOneRemote, branchOneRemoteAheadBy,
-            branchTwoRemoteHead, branchTwoRemote, branchTwoRemoteAheadBy);
+            branchTwoRemoteHead, branchTwoRemote, branchTwoRemoteAheadBy,
+            settings);
     }
 
     // now that we know if local is ahead, we can
     // get the local history of branch & master
     const localHistory = await getMultiBranchHistory(repo,
         branchOneHead, branchOne, branchOneLocalAheadBy,
-        branchTwoHead, branchTwo, branchTwoLocalAheadBy);
+        branchTwoHead, branchTwo, branchTwoLocalAheadBy,
+        settings);
 
     return {
         'local': localHistory,
@@ -259,7 +264,7 @@ async function getMultiBranchLocalAndRemoteHistory(repo, branchOne, branchOneHea
  * @param repoPath
  * @returns {Promise<Array<Commit>|{remote: {msg: string}, local: ({merged: *, branches: {branchName: string, history: *}[], isMultiBranch: boolean}|Array)}>}
  */
-async function getCurrentBranchHistoryFromMaster(repoPath) {
+async function getCurrentBranchHistoryFromMaster(repoPath, settings) {
     const repo = await utils.openRepo(repoPath);
 
     // get the current checked-out branch's head commit & branch reference
@@ -275,11 +280,11 @@ async function getCurrentBranchHistoryFromMaster(repoPath) {
     // check if master is the current branch
     if (currentBranch.name() === masterBranch.name()) {
         // master is the current branch so just return single branch history
-        return await getNormalizedSingleBranchHistory(repo, currentHead, currentBranch, COMMITS_TO_DISPLAY);
+        return await getNormalizedSingleBranchHistory(repo, currentHead, currentBranch, settings.commitsToDisplay, settings);
     }
 
     // get the full history of both remote & local checked out branch
-    const history = await getMultiBranchLocalAndRemoteHistory(repo, masterBranch, masterHead, currentBranch, currentHead);
+    const history = await getMultiBranchLocalAndRemoteHistory(repo, masterBranch, masterHead, currentBranch, currentHead, settings);
 
     if (!history.remote) {
         // check if there is a remote branch with the same name that is just untracked.
@@ -297,14 +302,14 @@ async function getCurrentBranchHistoryFromMaster(repoPath) {
  * @param repoPath
  * @returns Obj
  */
-async function getCurrentBranchHistory(repoPath) {
+async function getCurrentBranchHistory(repoPath, settings) {
     const repo = await utils.openRepo(repoPath);
     // get the local checked-out branch's head commit
     const localHead = await repo.getHeadCommit();
     // get the local branch reference
     const currentBranch = await repo.getCurrentBranch();
 
-    return await getNormalizedSingleBranchHistory(repo, localHead, currentBranch, COMMITS_TO_DISPLAY);
+    return await getNormalizedSingleBranchHistory(repo, localHead, currentBranch, settings.commitsToDisplay, settings);
 }
 
 module.exports = {

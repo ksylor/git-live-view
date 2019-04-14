@@ -12,7 +12,7 @@ const rebase = require('./rebase');
 const utils = require('./utils');
 
 const DEFAULT_SETTINGS = {
-    showWithMaster: true,
+    showWithMaster: false,
     commitsToDisplay: 8,
     mergedHistoryLength: 3,
 };
@@ -59,50 +59,25 @@ sio.on('connection', async function(socket) {
     socket.on("disconnect", () => console.log("Client disconnected"));
 
     socket.on('TEST', function(data) {
-        console.log("test connection");
-        console.log(data);
+        console.log("TEST", data);
     });
 
+    // setup initial session data
     let sessionData = socket.request.session;
 
     // initialize settings
     sessionData.settings = DEFAULT_SETTINGS;
+    sessionData.history = [];
     sessionData.save();
 
-    // get the initial status
-    let data;
-    const repo = await utils.openRepo(repoPath);
-
-    if (repo.isRebasing()) {
-        // rebase in progress
-        data = await getRebaseStatus(sessionData.settings);
-    } else if (repo.isMerging()) {
-        // merge in progress
-    } else {
-        data = await getStatus(sessionData.settings);
-    }
-
-    // send data to client
-    socket.emit('UPDATE', data);
+    // get the current repo status and emit to client
+    updateStatus(socket, sessionData);
 
     // watch for any file changes in the git repo and
     // send updated status to the client
     watcher.on('all', async (event, path) => {
-        console.log(event, path);
-
-        let data;
-
-        if (repo.isRebasing()) {
-            // rebase in progress
-            data = await getRebaseStatus(sessionData.settings);
-        } else if (repo.isMerging()) {
-            // merge in progress
-        } else {
-            data = await getStatus(sessionData.settings);
-        }
-
-        // TODO: only send update if the data has changed
-        socket.emit('UPDATE', data);
+        console.log("file change", event, path);
+        updateStatus(socket, sessionData);
     });
 
     // handle when user changes settings in the UI
@@ -112,19 +87,38 @@ sio.on('connection', async function(socket) {
         sessionData.save();
 
         // get new data with new settings
-        const data = await getStatus(sessionData.settings);
-
-        // TODO: only send update if the data has changed
-        socket.emit('UPDATE', data);
+        updateStatus(socket, sessionData);
     });
 });
 
+async function updateStatus(socket, sessionData) {
+    let data;
+    let repo = await utils.openRepo(repoPath);
+
+    if (repo.isRebasing()) {
+        data = await getRebaseStatus(sessionData.settings);
+    } else if (repo.isMerging()) {
+        // merge in progress
+        // do something to handle it
+    } else {
+        data = await getStatus(sessionData.settings);
+    }
+
+    if (!equal(sessionData.history[sessionData.history.length - 1], data)) {
+        console.log("new state!");
+        sessionData.history.push(data);
+        sessionData.save();
+
+        socket.emit('UPDATE', data);
+    }
+}
+
 async function getStatus(settings) {
     const branchStatus = settings.showWithMaster
-        ? await branches.getCurrentFromMaster(repoPath)
-        : await branches.getCurrent(repoPath);
+        ? await branches.getCurrentFromMaster(repoPath, settings)
+        : await branches.getCurrent(repoPath, settings);
 
-    const fileStatus = await files.get(repoPath);
+    const fileStatus = await files.get(repoPath, settings);
 
     return {
         settings: settings,
@@ -134,11 +128,11 @@ async function getStatus(settings) {
 }
 
 async function getRebaseStatus(settings) {
-    const rebaseStatus = await rebase.getRebase(repoPath);
+    const rebaseStatus = await rebase.getRebase(repoPath, settings);
 
     console.log(rebaseStatus);
 
-    const fileStatus = await files.get(repoPath);
+    const fileStatus = await files.get(repoPath, settings);
 
     return {
         rebaseInProgress: true,
@@ -147,7 +141,3 @@ async function getRebaseStatus(settings) {
         ...fileStatus
     }
 }
-
-app.get('/api/status', async (req, res) => {
-    res.json(getStatus());
-});
