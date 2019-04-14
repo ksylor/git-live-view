@@ -92,6 +92,7 @@ sio.on('connection', async function(socket) {
 });
 
 async function updateStatus(socket, sessionData) {
+    console.log('getting status')
     let data;
     let repo = await utils.openRepo(repoPath);
 

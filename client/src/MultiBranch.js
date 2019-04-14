@@ -10,14 +10,18 @@ class MultiBranch extends Component {
 
     componentDidMount() {
         // wait to make sure that everything is rendered
-        setTimeout(this.drawConnectionLines.bind(this), 300);
+        this.timeout = setTimeout(this.drawConnectionLines.bind(this), 100);
         // listen for resize event
         this.resizeListen(this.timeout);
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
         // wait to make sure that everything is rendered
-        setTimeout(this.drawConnectionLines.bind(this), 300);
+        this.timeout = setTimeout(this.drawConnectionLines.bind(this), 100);
+    }
+
+    componentWillUnmount() {
+        clearTimeout(this.timeout);
     }
 
     resizeListen(timeout) {
@@ -38,6 +42,8 @@ class MultiBranch extends Component {
 
     drawConnectionLines() {
         let multiBranchWrapper = this.multiBranches.current;
+
+        if (!multiBranchWrapper) multiBranchWrapper = document.getElementById("multi-branch-wrap");
 
         // get the last commit item for b1
         let b1El = multiBranchWrapper.querySelector("#b1 .commit:last-child");
@@ -92,7 +98,7 @@ class MultiBranch extends Component {
 
     render() {
         return (
-            <div className="multi-branch-wrap" ref={this.multiBranches}>
+            <div className="multi-branch-wrap" ref={this.multiBranches} id="multi-branch-wrap">
                 <div className="multi-branch">
                     <Branch
                         branchName={this.props.branches[0].branchName}

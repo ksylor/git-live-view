@@ -214,9 +214,13 @@ li.commit-is-rebasing {
   color: darkred;
   line-height: 1;
   position: absolute;
-  right: -27px;
   top: 50%;
   margin-top: -12px;
+  right: 0;
+
+  .multi-branch & {
+    right: -27px;
+  }
 }
 
 .commit-rebase-indicator {
@@ -326,4 +330,95 @@ li.commit-is-rebasing {
     margin-left: 0;
     margin-right: 8px;
   }
+}
+
+.settings-button,
+.settings-form {
+  display: block;
+  position: fixed;
+  top: 1em;
+  right: 1em;
+  z-index:1001;
+}
+
+.settings-button {
+  background: none;
+  border: none;
+  height: 3em;
+  width: 3em;
+  color: #ccc;
+}
+
+.settings-form {
+  border: 1px solid #ccc;
+  padding: 2em;
+  margin: 1em;
+  background: white;
+  box-shadow: -3px 3px 5px rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  visibility: visible;
+  transition: opacity ease-in-out 200ms;
+  opacity: 1;
+
+  &[aria-hidden="true"] {
+    visibility:hidden;
+    opacity: 0;
+  }
+}
+
+fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+legend {
+  padding: 0;
+  margin: 0 0 1em;
+  font-weight: bold;
+}
+
+label {
+  display: block;
+  margin-bottom: 1em;
+}
+
+button[type="submit"] {
+  font-size: 16px;
+  border-radius: 6px;
+  padding: .5em 1em;
+  line-height: 1;
+  text-align: center;
+  text-decoration: none;
+  border: solid 1px transparent;
+  color: #fff;
+  background-color: darkorange;
+  cursor: pointer;
+  font-weight: bold;
+
+  &:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    &:hover {
+      background-color: #ccc;
+      border-color: transparent;
+      color: #fff;
+    }
+  }
+
+  &:active {
+    transform: translateY(1px);
+    filter: saturate(150%);
+  }
+
+  &:hover,
+  &:focus {
+    color: darkorange;
+    border-color: currentColor;
+    background-color: white;
+  }
+}
+
+input[type="checkbox"] {
+  margin-right: .5em;
 }

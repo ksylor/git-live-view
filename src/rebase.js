@@ -23,20 +23,33 @@ const DEFAULT_SETTINGS = {
 
 let SETTINGS = DEFAULT_SETTINGS;
 
+function getFiles(repoPath) {
+    // make sure all the rebase files exist before we query them.
+    const rebaseHeadFile = fs.existsSync(repoPath + FILE_REBASE_ORIG_HEAD);
+    const rebaseHeadNameFile = fs.existsSync(repoPath + FILE_REBASE_HEAD_NAME);
+    const ontoFile = fs.existsSync(repoPath + FILE_REBASE_ONTO);
+    const todoFile = fs.existsSync(repoPath + FILE_REBASE_TODO);
+
+    return rebaseHeadFile && rebaseHeadNameFile && ontoFile && todoFile;
+}
+
 
 async function getRebaseState(repoPath, settings) {
     SETTINGS = settings;
     const repo = await utils.openRepo(repoPath);
 
-    // get the rebase command text file which will give us a list of
-    // the effected commits
-    const todoFileContents = await readFileAsync(repoPath + FILE_REBASE_TODO, {encoding: 'utf8'});
+    // make sure all the files exist before we try to rebase
+    let foundAllFiles = false;
+    while(!foundAllFiles) { console.log('waiting'); foundAllFiles = getFiles(repoPath); }
 
     // get the reference for the branch that is rebasing
     const rebaseHeadFileContents = await readFileAsync(repoPath + FILE_REBASE_ORIG_HEAD, {encoding: 'utf8'});
     const rebaseHeadNameFileContents = await readFileAsync(repoPath + FILE_REBASE_HEAD_NAME, {encoding: 'utf8'});
     // get the onto commit sha
     const ontoFileContents = await readFileAsync(repoPath + FILE_REBASE_ONTO, {encoding: 'utf8'});
+    // get the rebase command text file which will give us a list of
+    // the effected commits
+    const todoFileContents = await readFileAsync(repoPath + FILE_REBASE_TODO, {encoding: 'utf8'});
 
     if (rebaseHeadFileContents.trim() === ontoFileContents.trim()) {
         // not sure if you'd get into this state?
@@ -56,7 +69,7 @@ async function getRebaseState(repoPath, settings) {
         let branchHistory = await branches.getNormalizedSingleBranchHistory(repo, rebaseHeadCommit, rebaseBranch, foundIndex + 3, settings);
 
         // tag the affected commits
-        branchHistory.local.history = await setAffectedCommits(todoFileContents, branchHistory.local.history);
+        branchHistory.local.history = await setAffectedCommits(repo, todoFileContents, branchHistory.local.history);
 
         // finally, tag the onto commit
         branchHistory.local.history[foundIndex].isRebaseOnto = true;
@@ -88,7 +101,8 @@ async function getRebaseState(repoPath, settings) {
         const history = await branches.getMultiBranchLocalAndRemoteHistory(repo,
             ontoBranch, ontoCommit, rebaseBranch, rebaseHeadCommit, settings);
 
-        // tag the affected commits
+        // tag the affected commits in the rebasing branch
+        // which is always the second branch returned
         history.local.branches[1].history = await setAffectedCommits(repo, todoFileContents, history.local.branches[1].history);
 
         // finally, tag the onto commit
@@ -117,10 +131,12 @@ async function getRebaseState(repoPath, settings) {
  * @param branchHistory
  * @returns {Promise<void>}
  */
-async function setAffectedCommits(repo, todoFileContents, branchHistory){
+async function setAffectedCommits(repo, todoFile, branchHistory){
+    console.log(todoFile);
+    const lines = todoFile.split('\n').filter(line => line.charAt(0) !== '#' && line.length > 0);
     // get a list of affected commits
-    const affectedCommits = await Promise.all(todoFileContents.split('\n')
-        .filter(line => line.charAt(0) !== '#' && line.length > 0)
+    const affectedCommits = await Promise.all(
+        lines
         .map(async function(line) {
             let chunks = line.split(' ');
             let commit = await nodegit.AnnotatedCommit.fromRevspec(repo, chunks[1]);

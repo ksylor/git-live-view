@@ -8,6 +8,7 @@ class Settings extends Component {
         this.state = {
             form: { ...props.settings },
             updating: false,
+            isOpen: props.isOpen,
         };
     }
 
@@ -19,41 +20,42 @@ class Settings extends Component {
                 form: { ...this.props.settings },
             });
         }
+        if (this.props.isOpen !== prevProps.isOpen) {
+            this.setState({ isOpen: this.props.isOpen });
+        }
     }
 
     render() {
         let { showWithMaster, commitsToDisplay, mergedHistoryLength } = this.state.form;
         let update = this.updateSetting.bind(this);
+        let ariaHidden = this.state.isOpen === false;
 
         if (this.state.updating) {
             return <div>Updating ...</div>;
         }
 
         return (
-            <div>
-                <div>
+            <form onSubmit={this.applySettings.bind(this)} className="settings-form" aria-hidden={ariaHidden}>
+                <fieldset>
+                    <legend>Change view settings</legend>
                     <label>
                         <input type="checkbox" id="showWithMaster" checked={showWithMaster} onChange={update} />
                         Show with master
                     </label>
-                </div>
 
-                <div>
                     <label>
                         Commits to display:&nbsp;
                         <input id="commitsToDisplay" size="3" value={commitsToDisplay} onChange={update} />
                     </label>
-                </div>
 
-                <div>
                     <label>
                         Merged history length:&nbsp;
                         <input id="mergedHistoryLength" size="3" value={mergedHistoryLength} onChange={update} />
                     </label>
-                </div>
+                </fieldset>
 
-                <button disabled={!this.haveSettingsChanged()} onClick={this.applySettings.bind(this)}>Apply</button>
-            </div>
+                <button type="submit" disabled={!this.haveSettingsChanged()}>Apply</button>
+            </form>
         );
     }
 
