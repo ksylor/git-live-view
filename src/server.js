@@ -4,6 +4,7 @@ const socket = require('socket.io');
 const chokidar = require('chokidar');
 const fs = require('fs');
 const nodegit = require('nodegit');
+const equal = require('deep-equal');
 
 const branches = require('./branches');
 const files = require('./files');
@@ -12,8 +13,6 @@ const utils = require('./utils');
 
 const DEFAULT_SETTINGS = {
     showWithMaster: true,
-
-    // these don't actually get passed to the rest of the server code yet!
     commitsToDisplay: 8,
     mergedHistoryLength: 3,
 };
@@ -57,6 +56,12 @@ app.use(session);
 // everything that happens during a session goes in here
 sio.on('connection', async function(socket) {
     console.log('Socket created: ' + socket.id);
+    socket.on("disconnect", () => console.log("Client disconnected"));
+
+    socket.on('TEST', function(data) {
+        console.log("test connection");
+        console.log(data);
+    });
 
     let sessionData = socket.request.session;
 
@@ -78,7 +83,7 @@ sio.on('connection', async function(socket) {
     }
 
     // send data to client
-    sio.emit('UPDATE', data);
+    socket.emit('UPDATE', data);
 
     // watch for any file changes in the git repo and
     // send updated status to the client
@@ -97,11 +102,11 @@ sio.on('connection', async function(socket) {
         }
 
         // TODO: only send update if the data has changed
-        sio.emit('UPDATE', data);
+        socket.emit('UPDATE', data);
     });
 
     // handle when user changes settings in the UI
-    sio.on('SETTINGS', async function(settings) {
+    socket.on('UPDATE_SETTINGS', async function(settings) {
         console.log('SETTINGS', settings);
         sessionData.settings = settings;
         sessionData.save();
@@ -110,7 +115,7 @@ sio.on('connection', async function(socket) {
         const data = await getStatus(sessionData.settings);
 
         // TODO: only send update if the data has changed
-        sio.emit('UPDATE', data);
+        socket.emit('UPDATE', data);
     });
 });
 

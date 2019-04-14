@@ -15,7 +15,7 @@ class Commit extends Component {
     render() {
         return (
             <li className={this.getClassNames()}
-                id={this.props.isRebaseOnto ? "rebase-onto" : false}
+                id={this.props.isRebaseOnto ? "rebase-onto" : undefined }
                 {...(this.props.isRebaseOnto
                     ? { "data-tooltip": "this is the commit your rebase will be re-played onto" }
                     : this.props.isRebasingCommit

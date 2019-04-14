@@ -25,7 +25,12 @@ class App extends Component {
         const update = data => {
             console.log(data);
             this.setState({data: data});
-        }
+        };
+
+        this.onSettingsChange = function(settings) {
+            console.log(settings);
+            this.socket.emit('UPDATE_SETTINGS', settings);
+        };
     }
 
     getNoRemoteMessage(type, branchName) {
@@ -85,11 +90,6 @@ class App extends Component {
               </Enviro>
           </div>
         );
-    }
-
-    onSettingsChange(settings) {
-        console.log(this.socket);
-        this.socket.emit('SETTINGS', settings);
     }
 }
 
