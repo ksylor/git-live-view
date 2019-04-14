@@ -80,8 +80,10 @@ class App extends Component {
               </button>
 
               <Settings isOpen={this.state.settingsIsOpen} settings={this.state.data.settings} onSettingsChange={this.onSettingsChange.bind(this)} />
+
               { this.state.data.rebaseInProgress ?
-                  <div className="notice"><h2>Hi! It appears you are in the middle of a rebase!</h2></div> : "" }
+                  <div className="notice"><h2>Rebase in progress</h2></div> : "" }
+
               <Enviro title="Github" type="hub">
                   <SubEnviro title="Remote" type="remote">
                       { this.state.data.remote.msg
