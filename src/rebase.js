@@ -35,7 +35,6 @@ function getFiles(repoPath) {
 
 
 async function getRebaseState(repoPath, settings) {
-    SETTINGS = settings;
     const repo = await utils.openRepo(repoPath);
 
     // make sure all the files exist before we try to rebase
@@ -66,7 +65,7 @@ async function getRebaseState(repoPath, settings) {
     // check and see if the commit is in the current branch
     const foundIndex = await utils.searchHistoryForCommit(repo, rebaseHeadCommit, ontoCommit.id());
     if (foundIndex >= 0) {
-        let branchHistory = await branches.getNormalizedSingleBranchHistory(repo, rebaseHeadCommit, rebaseBranch, foundIndex + 3, settings);
+        let branchHistory = await branches.getNormalizedSingleBranchHistory(repo, rebaseHeadCommit, rebaseBranch, foundIndex + 3, true, settings);
 
         // tag the affected commits
         branchHistory.local.history = await setAffectedCommits(repo, todoFileContents, branchHistory.local.history);
@@ -132,7 +131,6 @@ async function getRebaseState(repoPath, settings) {
  * @returns {Promise<void>}
  */
 async function setAffectedCommits(repo, todoFile, branchHistory){
-    console.log(todoFile);
     const lines = todoFile.split('\n').filter(line => line.charAt(0) !== '#' && line.length > 0);
     // get a list of affected commits
     const affectedCommits = await Promise.all(

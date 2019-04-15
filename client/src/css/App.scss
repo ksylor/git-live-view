@@ -122,6 +122,7 @@
   align-items: center;
   border-left: 3px solid transparent;
   border-right: 3px solid transparent;
+
 }
 
 .commit-dot {
@@ -140,10 +141,11 @@
   position: absolute;
   height: 100%;
   width: 3px;
-  background: #FFA500;
+  background: currentColor;
   top: 28px;
   margin-left: 5px;
   z-index: -1;
+  color: #FFA500;
 
   .commit:last-child & {
     height: 50%;
@@ -162,7 +164,7 @@
 
   svg {
     stroke-width: 3px;
-    stroke: #FFA500;
+    stroke: currentColor;
   }
 }
 
@@ -177,7 +179,10 @@
 
 .commit-is-ahead {
   color: darkred;
-  & .commit-line {
+  font-weight: bold;
+
+  & .commit-line,
+  & .commit-dot {
     color: darkred;
   }
 }
@@ -227,9 +232,28 @@ li.commit-is-rebasing {
 }
 
 .commit-rebase-indicator {
-  width: 12px;
+  width: 24px;
+  height: 24px;
+  margin-left: 4px;
   color: darkred;
   line-height: 1;
+
+  &.squash,
+  &.fixup {
+    width: 12px;
+    height: auto;
+  }
+
+  &.pick,
+  &.drop {
+    width: 18px;
+    height: auto;
+  }
+
+  &.edit {
+    width: 16px;
+    height: auto;
+  }
 }
 
 .files {
@@ -271,12 +295,12 @@ li.commit-is-rebasing {
 }
 
 // default tooltips to the right
-[data-tooltip] {
+.has-tooltip {
   position: relative;
   cursor: pointer;
 
-  &:before,
-  &:after {
+  .tooltip,
+  .tooltip:before {
     visibility: hidden;
     opacity: 0;
     pointer-events: none;
@@ -286,8 +310,8 @@ li.commit-is-rebasing {
     top:50%;
   }
 
-  &:before {
-    margin-left:-2px;
+  .tooltip:before {
+    left: -10px;
     content: "";
     background: no-repeat url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http://www.w3.org/2000/svg%22%20width%3D%2212px%22%20height%3D%2236px%22%3E%3Cpath%20fill%3D%22rgba(0,0,0,0.8)%22%20transform%3D%22rotate(90 6 6)%22%20d%3D%22M2.658,0.000%20C-13.615,0.000%2050.938,0.000%2034.662,0.000%20C28.662,0.000%2023.035,12.002%2018.660,12.002%20C14.285,12.002%208.594,0.000%202.658,0.000%20Z%22/%3E%3C/svg%3E");
     background-size: 100% auto;
@@ -297,7 +321,7 @@ li.commit-is-rebasing {
     transform: translate(0, -50%);
   }
 
-  &:after {
+  .tooltip {
     margin-left:8px;
     transform: translate(0, -50%);
     content: attr(data-tooltip);
@@ -311,31 +335,35 @@ li.commit-is-rebasing {
     pointer-events: none;
   }
 
-  &:hover:before,
-  &:hover:after {
+  &:hover .tooltip,
+  &:hover .tooltip:before {
     visibility: visible;
     opacity: 1;
+  }
+
+  .tooltip.wide {
+    min-width: 100px;
   }
 }
 
 // align the first branch's tooltips to the left
-.multi-branch .branch:first-child [data-tooltip] {
-  &:before,
-  &:after {
+.multi-branch .branch:first-child .has-tooltip {
+  .tooltip,
+  .tooltip:after {
     left:auto;
     right: 100%;
   }
 
-  &:before {
-    margin-left: 0;
-    margin-right:-2px;
+  .tooltip:before {
+    right: -10px;
+    left: auto;
     transform: rotate(180deg);
     top: 50%;
     transform-origin: center center;
     margin-top: -10px;
   }
 
-  &:after {
+  .tooltip {
     margin-left: 0;
     margin-right: 8px;
   }
