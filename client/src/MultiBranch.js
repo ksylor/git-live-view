@@ -11,8 +11,10 @@ class MultiBranch extends Component {
     componentDidMount() {
         // wait to make sure that everything is rendered
         this.timeout = setTimeout(this.drawConnectionLines.bind(this), 100);
+
+        this.boundListener = this.resizeListen.bind(this);
         // listen for resize event
-        this.resizeListen(this.timeout);
+        window.addEventListener('resize', this.boundListener);
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
@@ -22,15 +24,14 @@ class MultiBranch extends Component {
 
     componentWillUnmount() {
         clearTimeout(this.timeout);
+        window.removeEventListener("resize", this.boundListener);
     }
 
-    resizeListen(timeout) {
-        window.addEventListener('resize', function() {
-            // clear the timeout
-            clearTimeout(timeout);
-            // start timing for event "completion"
-            timeout = setTimeout(this.drawConnectionLines.bind(this), 10);
-        }.bind(this));
+    resizeListen() {
+        // clear the timeout
+        clearTimeout(this.timeout);
+        // re-draw connection lines
+        this.timeout = setTimeout(this.drawConnectionLines.bind(this), 10);
     }
 
     getDotPosition(commitEl) {
@@ -42,7 +43,6 @@ class MultiBranch extends Component {
 
     drawConnectionLines() {
         let multiBranchWrapper = this.multiBranches.current;
-
         if (!multiBranchWrapper) multiBranchWrapper = document.getElementById("multi-branch-wrap");
 
         // get the last commit item for b1

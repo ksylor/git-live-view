@@ -44,6 +44,10 @@
   }
 }
 
+.enviro-title {
+  color: darkorange;
+}
+
 .subs {
   display: flex;
   flex-basis: 100%;
@@ -97,8 +101,7 @@
 
 // the merged branch
 .multi-branch + .branch {
-  width: 50%;
-  margin: 0 auto;
+  align-items: center;
   flex-basis: auto;
 }
 

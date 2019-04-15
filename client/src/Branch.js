@@ -17,10 +17,12 @@ class Branch extends Component {
 
         return (
             <div className="branch">
-                <h4 className="branch-name">{this.props.branchName}</h4>
-                <ul className="branch-commits" id={this.props.id}>
-                    {commits}
-                </ul>
+                {this.props.branchName ? <h4 className="branch-name">{this.props.branchName}</h4> : ""}
+                {this.props.history.length > 0 ?
+                    <ul className="branch-commits" id={this.props.id}>
+                        {commits}
+                    </ul>
+                    : ""}
             </div>
         )
     }

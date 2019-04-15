@@ -154,10 +154,9 @@ async function getMultiBranchHistory(
     branchTwoIsCurrentHead,
     settings
 ) {
+    let sameHead = false;
     if (branchOneHead.id().equal(branchTwoHead.id())) {
-        // both branches point to the same commit
-        // TODO: fix this to return something
-        return [];
+        sameHead = true;
     }
 
     const mergeBase = await nodegit.Merge.base(repo, branchOneHead, branchTwoHead);
@@ -174,7 +173,11 @@ async function getMultiBranchHistory(
     const mergedHistory = await utils.getHistory(repo, mergeCommit, settings.mergedHistoryLength);
 
     if(settings.showHead && branchTwoIsCurrentHead) {
-        branchTwoHistory[0].isHead = true;
+        if (sameHead) {
+            mergedHistory[0].isHead = true;
+        } else {
+            branchTwoHistory[0].isHead = true;
+        }
     }
 
     return {
