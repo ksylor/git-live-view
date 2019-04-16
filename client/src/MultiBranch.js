@@ -99,6 +99,13 @@ class MultiBranch extends Component {
     render() {
         return (
             <div className="multi-branch-wrap" ref={this.multiBranches} id="multi-branch-wrap">
+                { this.props.mergedStart ?
+                    <Branch
+                        branchName={this.props.mergedStart.branchName}
+                        history={this.props.mergedStart.history}
+                        id="mbstart"
+                    /> : ""
+                }
                 <div className="multi-branch">
                     <Branch
                         branchName={this.props.branches[0].branchName}
@@ -113,7 +120,7 @@ class MultiBranch extends Component {
                 </div>
                 <Branch
                     branchName={null}
-                    history={this.props.merged}
+                    history={this.props.mergedEnd.history}
                     id="mb"
                 />
             </div>

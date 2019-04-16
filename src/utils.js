@@ -21,10 +21,41 @@ async function openRepo(repoPath) {
  * @returns {Promise<Array<Commit>>}
  */
 async function getHistory(repo, commit, numCommits) {
+    const commitId = typeof commit === "Commit" ? commit.id() : commit;
+    const walker = nodegit.Revwalk.create(repo);
+    walker.sorting(nodegit.Revwalk.SORT.TIME);
+    walker.push(commitId);
+    return walker.getCommits(numCommits);
+}
+
+async function getHistoryWithMerges(repo, commit, numCommits) {
     const walker = nodegit.Revwalk.create(repo);
     walker.sorting(nodegit.Revwalk.SORT.TIME);
     walker.push(commit.id());
-    return walker.getCommits(numCommits);
+    let foundMerge = false;
+    const startHistory = await walker.getCommitsUntil(function(checkCommit){
+        foundMerge = checkCommit.parentcount() > 1;
+        return !foundMerge;
+    });
+
+    if (foundMerge) {
+        let mergeCommit = startHistory[startHistory.length -1];
+        let [ parent1Id, parent2Id ] = mergeCommit.parents();
+        let mergeBase = await nodegit.Merge.base(repo, parent1Id, parent2Id);
+        let b1 = await getHistoryUntil(repo, parent1Id, mergeBase);
+        let b2 = await getHistoryUntil(repo, parent2Id, mergeBase);
+
+        let endHistory = await getHistory(repo, mergeBase, numCommits - startHistory.length);
+
+        return {
+            hasMerge: true,
+            startHistory: startHistory,
+            mergedHistory: [b1, b2],
+            endHistory: endHistory,
+        };
+    }
+
+    return startHistory;
 }
 
 /**
@@ -35,14 +66,14 @@ async function getHistory(repo, commit, numCommits) {
  * @param endCommitId
  * @returns {Promise<Array<Commit>>}
  */
-async function getHistoryUntil(repo, startCommit, endCommitId) {
-    if (startCommit.id().equal(endCommitId)) {
+async function getHistoryUntil(repo, startCommitId, endCommitId) {
+    if (startCommitId.equal(endCommitId)) {
         return [];
     }
 
     const walker = nodegit.Revwalk.create(repo);
     walker.sorting(nodegit.Revwalk.SORT.TIME);
-    walker.push(startCommit.id());
+    walker.push(startCommitId);
 
     return walker.getCommitsUntil(function(checkCommit) {
         return !checkCommit.id().equal(endCommitId);
@@ -129,4 +160,5 @@ module.exports = {
     getShortBranchName: getShortBranchName,
     getCommitHistory: getCommitHistory,
     searchHistoryForCommit: searchHistoryForCommit,
+    getHistoryWithMerges: getHistoryWithMerges,
 };

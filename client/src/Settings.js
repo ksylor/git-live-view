@@ -26,7 +26,7 @@ class Settings extends Component {
     }
 
     render() {
-        let { showWithMaster, commitsToDisplay, mergedHistoryLength, showHead } = this.state.form;
+        let { showWithMaster, commitsToDisplay, mergedHistoryLength, showHead, showMerges } = this.state.form;
         let update = this.updateSetting.bind(this);
         let ariaHidden = this.state.isOpen === false;
 
@@ -41,6 +41,11 @@ class Settings extends Component {
                     <label>
                         <input type="checkbox" id="showWithMaster" checked={showWithMaster} onChange={update} />
                         Show with master
+                    </label>
+
+                    <label>
+                        <input type="checkbox" id="showMerges" checked={showMerges} onChange={update} />
+                        Show merges
                     </label>
 
                     <label>

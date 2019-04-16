@@ -84,6 +84,12 @@ class App extends Component {
               { this.state.data.rebaseInProgress ?
                   <div className="notice"><h2>Rebase in progress</h2></div> : "" }
 
+              { this.state.data.mergeInProgress ?
+                  <div className="notice"><h2>Merge in progress</h2></div> : "" }
+
+              { this.state.data.isDetached ?
+                  <div className="notice"><p><strong>Detached HEAD!</strong> Don't panic, you can either just checkout an existing branch, or run <code>git checkout -b branch_name</code> to create a new branch from this point.</p></div> : ""}
+
               <Enviro title="Github" type="hub">
                   <SubEnviro title="Remote" type="remote">
                       { this.state.data.remote.msg
@@ -95,7 +101,7 @@ class App extends Component {
               </Enviro>
               <Enviro title="Your Machine" type="machine">
                   <SubEnviro title="Local" type="local">
-                      { this.state.data.local.isMultiBranch
+                      { this.state.data.local.isMultiBranch === true
                         ? <MultiBranch {...this.state.data.local} />
                         : <Branch {...this.state.data.local} />
                       }

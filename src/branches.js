@@ -38,8 +38,8 @@ async function getDifferenceBetweenLocalRemote(repo, localHead, remoteHead) {
     const mergeBase = await nodegit.Merge.base(repo, localHead, remoteHead);
 
     // how many commits back do we go in order to find the merge base?
-    const partialRemoteHistory = await utils.getHistoryUntil(repo, remoteHead, mergeBase);
-    const partialLocalHistory = await utils.getHistoryUntil(repo, localHead, mergeBase);
+    const partialRemoteHistory = await utils.getHistoryUntil(repo, remoteHead.id(), mergeBase);
+    const partialLocalHistory = await utils.getHistoryUntil(repo, localHead.id(), mergeBase);
 
     // how far ahead of merge base are local and remotes?
     // damn zero indexed arrays
@@ -59,7 +59,7 @@ async function getDifferenceBetweenLocalRemote(repo, localHead, remoteHead) {
  * @param localHead
  * @param localBranch
  * @param numCommits
- * @returns {Promise<Array<Commit>>}
+ * @returns {Promise<Object>}
  */
 async function getNormalizedSingleBranchHistory(repo, localHead, localBranch, numCommits, isCurrentBranch, settings) {
     // get the corresponding upstream reference
@@ -99,14 +99,49 @@ async function getNormalizedSingleBranchHistory(repo, localHead, localBranch, nu
         // get the history for remote, going back by the normalized number
         remoteHistory = await utils.getHistory(repo, remoteHead, goBackRemote);
 
-        // get the history for local, going back by the normalized number
-        localHistory = await utils.getHistory(repo, localHead, goBackLocal);
+        if (settings.showMerges && !settings.showWithMaster) {
+            localHistory = await utils.getHistoryWithMerges(repo, localHead, goBackLocal);
+        } else {
+            // get the history for local, going back by the normalized number
+            localHistory = await utils.getHistory(repo, localHead, goBackLocal);
+        }
+
     } else {
         // there's no remote so just get the local history back by the max number of commits
         localHistory = await utils.getHistory(repo, localHead, numCommits);
 
         // check if there is a remote branch with the same name that is just untracked.
         noRemoteMsg = await checkForUntrackedRemote(repo, localBranch);
+    }
+
+    console.log(localHistory);
+
+    if (settings.showMerges && localHistory.hasMerge) {
+        return {
+            'local': {
+                'isMultiBranch': true,
+                'mergedStart': {
+                    'branchName': utils.getShortBranchName(localBranch.name()),
+                    'history': utils.getCommitHistory(localHistory.startHistory),
+                },
+                'branches': [
+                    {
+                        'history': utils.getCommitHistory(localHistory.mergedHistory[0]),
+                    },
+                    {
+                        'history': utils.getCommitHistory(localHistory.mergedHistory[1]),
+                    }
+                ],
+                'mergedEnd': {
+                    'history': utils.getCommitHistory(localHistory.endHistory),
+                },
+            },
+            'remote': {
+                'msg': noRemoteMsg,
+                'branchName': remoteBranch ? utils.getShortBranchName(remoteBranch.name()) : utils.getShortBranchName(localBranch.name()),
+                'history': remoteHistory ? utils.getCommitHistory(remoteHistory, remoteAheadBy) : null,
+            },
+        };
     }
 
     if(settings.showHead && isCurrentBranch) {
@@ -161,8 +196,8 @@ async function getMultiBranchHistory(
 
     const mergeBase = await nodegit.Merge.base(repo, branchOneHead, branchTwoHead);
 
-    const branchOneHistory = await utils.getHistoryUntil(repo, branchOneHead, mergeBase);
-    const branchTwoHistory = await utils.getHistoryUntil(repo, branchTwoHead, mergeBase);
+    const branchOneHistory = await utils.getHistoryUntil(repo, branchOneHead.id(), mergeBase);
+    const branchTwoHistory = await utils.getHistoryUntil(repo, branchTwoHead.id(), mergeBase);
 
     // the walker includes the merge base commit in the history so we have to remove it
     // from each branch because we want it to be in the merged group
@@ -182,6 +217,7 @@ async function getMultiBranchHistory(
 
     return {
         'isMultiBranch': true,
+        'mergedStart': null,
         'branches': [
             {
                 'branchName': utils.getShortBranchName(branchOneBranch.name()),
@@ -192,7 +228,9 @@ async function getMultiBranchHistory(
                 'history': utils.getCommitHistory(branchTwoHistory, branchTwoAheadBy),
             }
         ],
-        'merged': utils.getCommitHistory(mergedHistory, 0),
+        'mergedEnd': {
+            'history': utils.getCommitHistory(mergedHistory, 0)
+        },
     };
 }
 

@@ -16,6 +16,7 @@ const DEFAULT_SETTINGS = {
     commitsToDisplay: 8,
     mergedHistoryLength: 3,
     showHead: false,
+    showMerges: true,
 };
 
 // get the repo at the path passed in via command line
@@ -101,7 +102,8 @@ async function updateStatus(socket, sessionData) {
         data = await getRebaseStatus(sessionData.settings);
     } else if (repo.isMerging()) {
         // merge in progress
-        // do something to handle it
+        // do the same thing for now
+        data = await getStatus(sessionData.settings);
     } else {
         data = await getStatus(sessionData.settings);
     }
@@ -122,7 +124,11 @@ async function getStatus(settings) {
 
     const fileStatus = await files.get(repoPath, settings);
 
+    const repo = await utils.openRepo(repoPath);
+
     return {
+        mergeInProgress: repo.isMerging(),
+        isDetached: repo.headDetached() === 1,
         settings: settings,
         ...branchStatus,
         ...fileStatus
@@ -131,8 +137,6 @@ async function getStatus(settings) {
 
 async function getRebaseStatus(settings) {
     const rebaseStatus = await rebase.getRebase(repoPath, settings);
-
-    console.log(rebaseStatus);
 
     const fileStatus = await files.get(repoPath, settings);
 

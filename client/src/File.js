@@ -9,7 +9,7 @@ class File extends Component {
         const statuses = this.props.status.map((status) => {
             var stat = status.toLowerCase();
             return (
-                <span className="tag">
+                <span className="tag" key={stat}>
                     {stat}
                 </span>
             );
