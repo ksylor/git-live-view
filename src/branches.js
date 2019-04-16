@@ -96,52 +96,84 @@ async function getNormalizedSingleBranchHistory(repo, localHead, localBranch, nu
             goBackRemote = Math.min((numCommits - (localAheadBy - remoteAheadBy)), numCommits);
         }
 
-        // get the history for remote, going back by the normalized number
-        remoteHistory = await utils.getHistory(repo, remoteHead, goBackRemote);
-
         if (settings.showMerges && !settings.showWithMaster) {
             localHistory = await utils.getHistoryWithMerges(repo, localHead, goBackLocal);
+            // get the history for remote, going back by the normalized number
+            remoteHistory = await utils.getHistoryWithMerges(repo, remoteHead, goBackRemote);
         } else {
             // get the history for local, going back by the normalized number
             localHistory = await utils.getHistory(repo, localHead, goBackLocal);
+            // get the history for remote, going back by the normalized number
+            remoteHistory = await utils.getHistory(repo, remoteHead, goBackRemote);
         }
 
     } else {
-        // there's no remote so just get the local history back by the max number of commits
-        localHistory = await utils.getHistory(repo, localHead, numCommits);
+        if (settings.showMerges && !settings.showWithMaster) {
+            localHistory = await utils.getHistoryWithMerges(repo, localHead, numCommits)
+        } else {
+            // there's no remote so just get the local history back by the max number of commits
+            localHistory = await utils.getHistory(repo, localHead, numCommits)
+        }
 
         // check if there is a remote branch with the same name that is just untracked.
         noRemoteMsg = await checkForUntrackedRemote(repo, localBranch);
     }
 
     console.log(localHistory);
+    let local;
+    let remote;
 
-    if (settings.showMerges && localHistory.hasMerge) {
-        return {
-            'local': {
-                'isMultiBranch': true,
-                'mergedStart': {
-                    'branchName': utils.getShortBranchName(localBranch.name()),
-                    'history': utils.getCommitHistory(localHistory.startHistory),
-                },
-                'branches': [
-                    {
-                        'history': utils.getCommitHistory(localHistory.mergedHistory[0]),
-                    },
-                    {
-                        'history': utils.getCommitHistory(localHistory.mergedHistory[1]),
-                    }
-                ],
-                'mergedEnd': {
-                    'history': utils.getCommitHistory(localHistory.endHistory),
-                },
+    if (localHistory.hasMerge) {
+        local = {
+            'isMultiBranch': true,
+            'mergedStart': {
+                'branchName': utils.getShortBranchName(localBranch.name()),
+                'history': utils.getCommitHistory(localHistory.startHistory),
             },
-            'remote': {
-                'msg': noRemoteMsg,
-                'branchName': remoteBranch ? utils.getShortBranchName(remoteBranch.name()) : utils.getShortBranchName(localBranch.name()),
-                'history': remoteHistory ? utils.getCommitHistory(remoteHistory, remoteAheadBy) : null,
+            'branches': [
+                {
+                    'history': utils.getCommitHistory(localHistory.mergedHistory[0]),
+                },
+                {
+                    'history': utils.getCommitHistory(localHistory.mergedHistory[1]),
+                }
+            ],
+            'mergedEnd': {
+                'history': utils.getCommitHistory(localHistory.endHistory),
             },
         };
+    } else {
+        local = {
+            'branchName': utils.getShortBranchName(localBranch.name()),
+            'history': utils.getCommitHistory(localHistory, localAheadBy),
+        }
+    }
+
+    if (remoteHistory.hasMerge) {
+        remote = {
+            'isMultiBranch': true,
+            'mergedStart': {
+                'branchName': utils.getShortBranchName(remoteBranch.name()),
+                'history': utils.getCommitHistory(remoteHistory.startHistory),
+            },
+            'branches': [
+                {
+                    'history': utils.getCommitHistory(remoteHistory.mergedHistory[0]),
+                },
+                {
+                    'history': utils.getCommitHistory(remoteHistory.mergedHistory[1]),
+                }
+            ],
+            'mergedEnd': {
+                'history': utils.getCommitHistory(remoteHistory.endHistory),
+            },
+        };
+    } else {
+        remote = {
+            'msg': noRemoteMsg,
+            'branchName': remoteBranch ? utils.getShortBranchName(remoteBranch.name()) : utils.getShortBranchName(localBranch.name()),
+            'history': remoteHistory ? utils.getCommitHistory(remoteHistory, remoteAheadBy) : null,
+        }
     }
 
     if(settings.showHead && isCurrentBranch) {
@@ -149,16 +181,8 @@ async function getNormalizedSingleBranchHistory(repo, localHead, localBranch, nu
     }
 
     return {
-        'isMultiBranch' : false,
-        'local': {
-            'branchName': utils.getShortBranchName(localBranch.name()),
-            'history': utils.getCommitHistory(localHistory, localAheadBy),
-        },
-        'remote' : {
-            'msg': noRemoteMsg,
-            'branchName': remoteBranch ? utils.getShortBranchName(remoteBranch.name()) : utils.getShortBranchName(localBranch.name()),
-            'history': remoteHistory ? utils.getCommitHistory(remoteHistory, remoteAheadBy) : null,
-        }
+        'local': local,
+        'remote': remote,
     };
 }
 
