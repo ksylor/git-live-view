@@ -76,6 +76,7 @@
 .branch-name {
   text-align: center;
   font-family: monospace;
+  font-size: 16px;
 }
 
 .multi-branch-wrap {
@@ -103,16 +104,6 @@
 .multi-branch-wrap > .branch {
   align-items: center;
   flex-basis: auto;
-}
-
-// if there is a merged start branch, style that
-.multi-branch-wrap > .branch:first-child {
-  .commit:last-child .commit-line-angled.first {
-
-  }
-  .commit:last-child .commit-line-angled.second {
-
-  }
 }
 
 .branch-commits {
@@ -184,6 +175,7 @@
   max-width: 7em;
   overflow: hidden;
   font-family: monospace;
+  font-size: 16px;
   margin-left: .5em;
 }
 
