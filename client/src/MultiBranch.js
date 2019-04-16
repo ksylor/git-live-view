@@ -45,6 +45,8 @@ class MultiBranch extends Component {
         let multiBranchWrapper = this.multiBranches.current;
         if (!multiBranchWrapper) multiBranchWrapper = document.getElementById("multi-branch-wrap");
 
+        // get lsat commit for optional mergedbranchstart
+        let smbEl = multiBranchWrapper.querySelector("#mbstart .commit:last-child");
         // get the last commit item for b1
         let b1El = multiBranchWrapper.querySelector("#b1 .commit:last-child");
         // get the last commit item for b2
@@ -93,6 +95,46 @@ class MultiBranch extends Component {
             b2line.innerHTML = b2svg;
             // add extra left positioning to get it centered
             b2line.style.left = `${-b2boxx + 6}px`; // 6px is half the width of the dot
+        }
+
+        if (smbEl) {
+            let lines = smbEl.getElementsByClassName("commit-line");
+            let l1 = lines[0] || smbEl.appendChild(document.createElement("span"));
+            let l2 = lines[1] || smbEl.appendChild(document.createElement("span"));
+            l1.setAttribute("class", "commit-line commit-line-angled first");
+            l2.setAttribute("class", "commit-line commit-line-angled second");
+
+            // assume that there is def a b1 and b2
+            // get first children of branches
+            b1El = multiBranchWrapper.querySelector("#b1 .commit:first-child");
+            // get the last commit item for b2
+            b2El = multiBranchWrapper.querySelector("#b2 .commit:first-child");
+            let smb = this.getDotPosition(smbEl);
+            let b1 = this.getDotPosition(b1El);
+            let b2 = this.getDotPosition(b2El);
+
+            let l1x = smb.x - b1.x;
+            let l1y = b1.y - smb.y;
+
+            let l1svg = `<svg xmlns="http://www.w3.org/2000/svg" 
+            viewBox="0 0 ${l1x} ${l1y}" height="${l1y}" width="${l1x}">
+                <line x1="0" y1="${l1y}" x2="${l1x}" y2="0" />
+            </svg>`;
+
+            let l2x = b2.x - smb.x;
+            let l2y = b2.y - smb.y;
+
+            let l2svg = `<svg xmlns="http://www.w3.org/2000/svg" 
+            viewBox="0 0 ${l2x} ${l2y}" height="${l2y}" width="${l2x}">
+                <line x1="0" y1="0" x2="${l2x}" y2="${l2y}" />
+            </svg>`;
+
+            l1.innerHTML = l1svg;
+            l1.style.left = `${-l1x + 6}px`;
+            l2.innerHTML = l2svg;
+
+            smbEl.appendChild(l1);
+            smbEl.appendChild(l2);
         }
     }
 

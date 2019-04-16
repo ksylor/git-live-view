@@ -100,9 +100,19 @@
 }
 
 // the merged branch
-.multi-branch + .branch {
+.multi-branch-wrap > .branch {
   align-items: center;
   flex-basis: auto;
+}
+
+// if there is a merged start branch, style that
+.multi-branch-wrap > .branch:first-child {
+  .commit:last-child .commit-line-angled.first {
+
+  }
+  .commit:last-child .commit-line-angled.second {
+
+  }
 }
 
 .branch-commits {
