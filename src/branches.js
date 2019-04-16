@@ -149,7 +149,7 @@ async function getNormalizedSingleBranchHistory(repo, localHead, localBranch, nu
         }
     }
 
-    if (remoteHistory.hasMerge) {
+    if (remoteHistory && remoteHistory.hasMerge) {
         remote = {
             'isMultiBranch': true,
             'mergedStart': {

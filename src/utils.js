@@ -28,6 +28,15 @@ async function getHistory(repo, commit, numCommits) {
     return walker.getCommits(numCommits);
 }
 
+/**
+ * gets the specified number of commits in history starting
+ * from the passed in commit
+ * with structure to display a merge commit
+ * @param repo
+ * @param commit
+ * @param numCommits
+ * @returns {Promise<{endHistory: Array<Commit>, mergedHistory: Array<Commit>[], hasMerge: boolean, startHistory}>}
+ */
 async function getHistoryWithMerges(repo, commit, numCommits) {
     const walker = nodegit.Revwalk.create(repo);
     walker.sorting(nodegit.Revwalk.SORT.TIME);
