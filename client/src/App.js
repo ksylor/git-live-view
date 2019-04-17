@@ -53,6 +53,15 @@ class App extends Component {
                 </div>
             );
         }
+
+        if (type === "MSG_REMOTE_IS_A_LIE") {
+            return (
+                <div className="no-remote lies">
+                    <img src="lie.jpg" alt="the cake is a lie"/>
+                    <h2>The remote<br />is a lie</h2>
+                </div>
+            )
+        }
     }
 
     toggleSettings() {

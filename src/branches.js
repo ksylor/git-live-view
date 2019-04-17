@@ -142,10 +142,18 @@ async function getNormalizedSingleBranchHistory(repo, localHead, localBranch, nu
                 'history': utils.getCommitHistory(localHistory.endHistory),
             },
         };
+
+        if(settings.showHead && isCurrentBranch) {
+            local.mergedStart[0].isHead = true;
+        }
     } else {
         local = {
             'branchName': utils.getShortBranchName(localBranch.name()),
             'history': utils.getCommitHistory(localHistory, localAheadBy),
+        }
+
+        if(settings.showHead && isCurrentBranch) {
+            local.history[0].isHead = true;
         }
     }
 
@@ -174,10 +182,6 @@ async function getNormalizedSingleBranchHistory(repo, localHead, localBranch, nu
             'branchName': remoteBranch ? utils.getShortBranchName(remoteBranch.name()) : utils.getShortBranchName(localBranch.name()),
             'history': remoteHistory ? utils.getCommitHistory(remoteHistory, remoteAheadBy) : null,
         }
-    }
-
-    if(settings.showHead && isCurrentBranch) {
-        localHistory[0].isHead = true;
     }
 
     return {
@@ -380,10 +384,41 @@ async function getCurrentBranchHistory(repoPath, settings) {
     return await getNormalizedSingleBranchHistory(repo, localHead, currentBranch, settings.commitsToDisplay, true, settings);
 }
 
+async function getCurrentAndTracking(repoPath, settings) {
+    const repo = await utils.openRepo(repoPath);
+    const localBranch = await repo.getCurrentBranch();
+    let localHead = await repo.getHeadCommit();
+
+    const remoteBranch = await await utils.getRemote(localBranch);
+
+    if (remoteBranch) {
+        let remoteHead = await repo.getReferenceCommit(remoteBranch);
+        const localHistory = await getMultiBranchHistory(repo,
+            remoteHead,
+            remoteBranch,
+            0,
+            localHead,
+            localBranch,
+            0,
+            true,
+            settings);
+
+        return {
+            local: localHistory,
+            remote: {
+                msg: "MSG_REMOTE_IS_A_LIE",
+            }
+        }
+    } else {
+        return getNormalizedSingleBranchHistory(repo, localHead, localBranch, settings.commitsToDisplay, true, settings)
+    }
+}
+
 module.exports = {
     getNormalizedSingleBranchHistory: getNormalizedSingleBranchHistory,
     getMultiBranchLocalAndRemoteHistory: getMultiBranchLocalAndRemoteHistory,
     checkForUntrackedRemote: checkForUntrackedRemote,
     getCurrentFromMaster: getCurrentBranchHistoryFromMaster,
-    getCurrent: getCurrentBranchHistory
+    getCurrent: getCurrentBranchHistory,
+    getCurrentAndTracking: getCurrentAndTracking,
 };

@@ -17,6 +17,7 @@ const DEFAULT_SETTINGS = {
     mergedHistoryLength: 3,
     showHead: false,
     showMerges: false,
+    showWithTracking: false,
 };
 
 // get the repo at the path passed in via command line
@@ -120,7 +121,8 @@ async function updateStatus(socket, sessionData) {
 async function getStatus(settings) {
     const branchStatus = settings.showWithMaster
         ? await branches.getCurrentFromMaster(repoPath, settings)
-        : await branches.getCurrent(repoPath, settings);
+        : settings.showWithTracking ? await branches.getCurrentAndTracking(repoPath, settings)
+            : await branches.getCurrent(repoPath, settings);
 
     const fileStatus = await files.get(repoPath, settings);
 
