@@ -58,7 +58,7 @@ class App extends Component {
             return (
                 <div className="no-remote lies">
                     <img src="lie.jpg" alt="the cake is a lie"/>
-                    <h2>The remote<br />is a lie</h2>
+                    <h2>The <strike>cake</strike> remote<br />is a lie</h2>
                 </div>
             )
         }

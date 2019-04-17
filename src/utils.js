@@ -54,6 +54,10 @@ async function getHistoryWithMerges(repo, commit, numCommits) {
         let b1 = await getHistoryUntil(repo, parent1Id, mergeBase);
         let b2 = await getHistoryUntil(repo, parent2Id, mergeBase);
 
+        // remove the merge base commit
+        b1.pop();
+        b2.pop();
+
         let endHistory = await getHistory(repo, mergeBase, numCommits - startHistory.length);
 
         return {
