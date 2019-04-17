@@ -144,7 +144,7 @@ async function getNormalizedSingleBranchHistory(repo, localHead, localBranch, nu
         };
 
         if(settings.showHead && isCurrentBranch) {
-            local.mergedStart[0].isHead = true;
+            local.mergedStart.history[0].isHead = true;
         }
     } else {
         local = {

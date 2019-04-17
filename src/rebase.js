@@ -39,7 +39,11 @@ async function getRebaseState(repoPath, settings) {
 
     // make sure all the files exist before we try to rebase
     let foundAllFiles = false;
-    while(!foundAllFiles) { console.log('waiting'); foundAllFiles = getFiles(repoPath); }
+    let tries = 1;
+    while(!foundAllFiles && tries < 10) {
+        console.log('waiting');
+        tries++;
+        foundAllFiles = getFiles(repoPath); }
 
     // get the reference for the branch that is rebasing
     const rebaseHeadFileContents = await readFileAsync(repoPath + FILE_REBASE_ORIG_HEAD, {encoding: 'utf8'});
