@@ -140,7 +140,7 @@ async function getRemote(branch) {
  */
 function getShortBranchName(longname) {
     return longname
-        .replace("refs/remotes/origin/", "")
+        .replace("refs/remotes/", "")
         .replace("refs/heads/", "");
 }
 
